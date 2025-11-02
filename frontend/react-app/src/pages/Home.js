@@ -13,11 +13,15 @@ const Home = () => {
 
   const fetchHomeData = async () => {
     try {
-      const [songsResponse] = await Promise.all([
-        catalogAPI.getSongs({ limit: 10 })
-      ]);
+      const songsResponse = await catalogAPI.getSongs({ limit: 10 });
       
-      setRecentSongs(songsResponse.data);
+      console.log('📡 Respuesta del backend:', songsResponse);
+      
+      // La respuesta de axios es: response.data = {success, data: [...]}
+      const songs = songsResponse.data?.data || [];
+      setRecentSongs(songs);
+      
+      console.log('✅ Canciones cargadas:', songs.length);
       
       // Mock featured playlists
       setFeaturedPlaylists([
@@ -45,7 +49,8 @@ const Home = () => {
       ]);
       
     } catch (error) {
-      console.error('Error fetching home data:', error);
+      console.error('❌ Error fetching home data:', error);
+      setRecentSongs([]);
     } finally {
       setLoading(false);
     }
@@ -100,19 +105,25 @@ const Home = () => {
       <section className="section">
         <h2 className="section-title">Recién agregadas</h2>
         <div className="tracks-list">
-          {recentSongs.map((track, index) => (
-            <div key={track.id} className="track-item fade-in">
-              <div className="track-info">
-                <span className="track-number">{index + 1}</span>
-                <div className="track-details">
-                  <h4 className="track-title">{track.title}</h4>
-                  <p className="track-artist">{track.artist_name}</p>
+          {recentSongs && recentSongs.length > 0 ? (
+            recentSongs.map((track, index) => (
+              <div key={track.id} className="track-item fade-in">
+                <div className="track-info">
+                  <span className="track-number">{index + 1}</span>
+                  <div className="track-details">
+                    <h4 className="track-title">{track.title}</h4>
+                    <p className="track-artist">{track.artist_name}</p>
+                  </div>
                 </div>
+                <div className="track-plays">{track.plays} plays</div>
+                <button className="play-btn">▶</button>
               </div>
-              <div className="track-plays">{track.plays} plays</div>
-              <button className="play-btn">▶</button>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p style={{ color: '#A1A1A6', textAlign: 'center', padding: '20px' }}>
+              No hay canciones disponibles
+            </p>
+          )}
         </div>
       </section>
     </div>

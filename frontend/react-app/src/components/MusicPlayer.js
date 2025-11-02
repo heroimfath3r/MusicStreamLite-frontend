@@ -1,18 +1,82 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useSongStream } from '../hooks/useSongStream.js';
+import { motion } from 'framer-motion';
+import { 
+  FaPlay, 
+  FaPause, 
+  FaStepBackward, 
+  FaStepForward, 
+  FaVolumeMute, 
+  FaVolumeUp,
+  FaHeart,
+  FaRegHeart,
+  FaListUl,
+  FaRandom,
+  FaRedoAlt
+} from 'react-icons/fa';
 import './MusicPlayer.css';
 
 const MusicPlayer = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(0.7);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [shuffleMode, setShuffleMode] = useState(false);
+  const [repeatMode, setRepeatMode] = useState(0);
 
-  // CANCIÓN PÚBLICA DE PRUEBA - FUNCIONA 100%
-  const demoSong = {
-    title: "XXXTENTACION - Find Me",
+  // Canción actual
+  const [currentSong, setCurrentSong] = useState({
+    id: 'song-001',
+    title: "Find Me",
     artist: "XXXTENTACION", 
-    url: "https://storage.googleapis.com/music-stream-lite-bucket/xxxtentacion-Find-Me.mp3?x-goog-signature=345ffe5f07a1fd3b4732addac70e45910be042114605eb10cc79bbe3e6625452bcb164dafa97043e2b8d33370d3f431061e4a69fc869c579c843588112d9a5a17dad665bd4e1c05a91082746bbdd7c2a43efa00f8b37c52c00ab05f993e7a519c34082571386b27bc6c344886318ff3abf778d5c4bd6b839463ca07862e4be031df1c0ec059aa824e5444c0ebd2e3cbea938c5bf8f14fca5aad8365151214012101401e8ddd3ed38ef5457b7cf81d3754bf5a00a7d4ec7d45b4a0a36942077b57041ed5ec893d437fdc4298fd63b98ee146090ad132044c1eabf284d6a84415e7f402a4af34b4c0a428329550886739d70131e9c267b58511f50e63f8b4acdd3&x-goog-algorithm=GOOG4-RSA-SHA256&x-goog-credential=musicstream-catalog-service%40musicstreamlite.iam.gserviceaccount.com%2F20251031%2Fus-central1%2Fstorage%2Fgoog4_request&x-goog-date=20251031T052834Z&x-goog-expires=600&x-goog-signedheaders=host"
+    cover: "https://via.placeholder.com/60x60?text=XXXTENTACION"
+  });
+
+  // Obtener URL firmada automáticamente
+  const { url: streamUrl, loading: urlLoading } = useSongStream(currentSong.id);
+  console.log('🎵 MusicPlayer montado, currentSong.id:', currentSong.id, 'streamUrl:', streamUrl, 'loading:', urlLoading);
+
+  // Sincronizar volumen con el audio
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = isMuted ? 0 : volume;
+    }
+  }, [volume, isMuted]);
+
+  // Actualizar tiempo actual de reproducción
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+    }
   };
 
-  const togglePlay = () => {
+  // Obtener duración cuando carga el audio
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration);
+    }
+  };
+
+  // Cambiar tiempo de reproducción
+  const handleProgressChange = (e) => {
+    const newTime = parseFloat(e.target.value);
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
+  };
+
+  // Toggle play/pause
+ const togglePlayPause = () => {
+    // No permitir play si la URL no está lista
+    if (!streamUrl || urlLoading) {
+      console.warn('⏳ URL de audio aún no disponible o cargando...');
+      return;
+    }
+
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
@@ -23,39 +87,213 @@ const MusicPlayer = () => {
     }
   };
 
+  // Cambiar volumen
+  const handleVolumeChange = (e) => {
+    const newVolume = parseFloat(e.target.value);
+    setVolume(newVolume);
+    if (newVolume > 0) {
+      setIsMuted(false);
+    }
+  };
+
+  // Toggle mute
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+  };
+
+  // Toggle shuffle
+  const toggleShuffle = () => {
+    setShuffleMode(!shuffleMode);
+  };
+
+  // Cambiar modo de repetición
+  const toggleRepeat = () => {
+    setRepeatMode((prev) => (prev + 1) % 3);
+  };
+
+  // Formatear tiempo en MM:SS
+  const formatTime = (time) => {
+    if (isNaN(time)) return '0:00';
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // Cuando termina la canción
+  const handleSongEnd = () => {
+    if (repeatMode === 2) {
+      // Repetir una canción
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play();
+      }
+    } else {
+      // Siguiente canción o parar
+      setIsPlaying(false);
+    }
+  };
+
+  // Animaciones
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5 }
+    }
+  };
+
+  const playButtonVariants = {
+    tap: { scale: 0.95 },
+    hover: { scale: 1.1 }
+  };
+
   return (
-    <div className="music-player">
-      {/* Audio element oculto */}
+    <motion.div 
+      className="apple-music-player"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+     {/* Audio element */}
       <audio
         ref={audioRef}
-        src={demoSong.url}
-        onEnded={() => setIsPlaying(false)}
+        src={streamUrl}
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
+        onEnded={handleSongEnd}
       />
-      
-      {/* Información de la canción */}
-      <div className="song-info">
-        <h4 className="song-title">{demoSong.title}</h4>
-        <p className="song-artist">{demoSong.artist}</p>
+
+      {/* Left side - Song info */}
+      <div className="player-left">
+        <motion.div 
+          className="now-playing-cover"
+          whileHover={{ scale: 1.05 }}
+        >
+          <img src={currentSong.cover} alt={currentSong.title} />
+        </motion.div>
+
+        <div className="now-playing-info">
+          <div className="now-playing-title">{currentSong.title}</div>
+          <div className="now-playing-artist">{currentSong.artist}</div>
+        </div>
+
+        <motion.button
+          className={`like-btn ${isFavorite ? 'liked' : ''}`}
+          onClick={() => setIsFavorite(!isFavorite)}
+          whileHover={{ scale: 1.2 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {isFavorite ? <FaHeart /> : <FaRegHeart />}
+        </motion.button>
       </div>
 
-      {/* Controles */}
-      <div className="player-controls">
-        <button className="control-btn" onClick={togglePlay}>
-          {isPlaying ? '⏸️' : '▶️'}
-        </button>
-        
+      {/* Center - Controls and progress */}
+      <div className="player-center">
+        <div className="player-controls">
+          <motion.button
+            className={`control-btn ${shuffleMode ? 'active' : ''}`}
+            onClick={toggleShuffle}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            title="Aleatorio"
+          >
+            <FaRandom size={16} />
+          </motion.button>
+
+          <motion.button
+            className="control-btn"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            title="Anterior"
+          >
+            <FaStepBackward size={18} />
+          </motion.button>
+
+          <motion.button
+            className="play-pause-btn"
+            onClick={togglePlayPause}
+            variants={playButtonVariants}
+            whileHover="hover"
+            whileTap="tap"
+          >
+            {isPlaying ? <FaPause size={16} /> : <FaPlay size={16} />}
+          </motion.button>
+
+          <motion.button
+            className="control-btn"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            title="Siguiente"
+          >
+            <FaStepForward size={18} />
+          </motion.button>
+
+          <motion.button
+            className={`control-btn ${repeatMode !== 0 ? 'active' : ''}`}
+            onClick={toggleRepeat}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            title={repeatMode === 0 ? 'Sin repetición' : repeatMode === 1 ? 'Repetir todo' : 'Repetir uno'}
+          >
+            <FaRedoAlt size={16} />
+            {repeatMode === 2 && <span className="repeat-one">1</span>}
+          </motion.button>
+        </div>
+
         <div className="progress-container">
-          <div className="progress-bar">
-            <div className="progress"></div>
-          </div>
+          <span className="time-current">{formatTime(currentTime)}</span>
+          <motion.input
+            type="range"
+            min="0"
+            max={duration || 0}
+            value={currentTime}
+            onChange={handleProgressChange}
+            className="progress-bar"
+            whileHover={{ scaleY: 1.5 }}
+          />
+          <span className="time-total">{formatTime(duration)}</span>
         </div>
       </div>
 
-      {/* Volumen */}
-      <div className="volume-control">
-        <button className="volume-btn">🔊</button>
+      {/* Right side - Volume and extras */}
+      <div className="player-right">
+        <motion.button
+          className="player-btn"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          title="Cola"
+        >
+          <FaListUl size={18} />
+        </motion.button>
+
+        <div className="volume-control">
+          <motion.button
+            className="volume-btn"
+            onClick={toggleMute}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {isMuted || volume === 0 ? (
+              <FaVolumeMute size={16} />
+            ) : (
+              <FaVolumeUp size={16} />
+            )}
+          </motion.button>
+
+          <motion.input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={handleVolumeChange}
+            className="volume-bar"
+            whileHover={{ scaleY: 1.5 }}
+          />
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

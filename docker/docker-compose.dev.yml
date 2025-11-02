@@ -1,0 +1,213 @@
+version: '3.8'
+
+services:
+  # ==========================================================================
+  # DATABASE
+  # ==========================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: musicstream-postgres
+    environment:
+      POSTGRES_DB: musicstream
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d musicstream"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - musicstream-network
+
+  # ==========================================================================
+  # BACKEND SERVICES
+  # ==========================================================================
+  catalog-service:
+    build:
+      context: ../backend/catalog-service
+      dockerfile: Dockerfile.dev
+    container_name: musicstream-catalog
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=musicstream
+      - DB_USER=admin
+      - DB_PASSWORD=password
+      - LOG_LEVEL=debug
+    volumes:
+      - ../backend/catalog-service:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "health-check.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - musicstream-network
+
+  user-service:
+    build:
+      context: ../backend/user-service
+      dockerfile: Dockerfile.dev
+    container_name: musicstream-user
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=musicstream
+      - DB_USER=admin
+      - DB_PASSWORD=password
+      - JWT_SECRET=dev-jwt-secret-key-change-in-production
+      - JWT_EXPIRES_IN=24h
+      - LOG_LEVEL=debug
+    volumes:
+      - ../backend/user-service:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "health-check.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - musicstream-network
+
+  analytics-service:
+    build:
+      context: ../backend/analytics-service
+      dockerfile: Dockerfile.dev
+    container_name: musicstream-analytics
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - LOG_LEVEL=debug
+      - FIRESTORE_EMULATOR_HOST=firestore:8080
+    volumes:
+      - ../backend/analytics-service:/app
+      - /app/node_modules
+    depends_on:
+      - catalog-service
+    healthcheck:
+      test: ["CMD", "node", "health-check.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - musicstream-network
+
+  # ==========================================================================
+  # FRONTEND
+  # ==========================================================================
+  frontend:
+    build:
+      context: ../frontend/react-app
+      dockerfile: Dockerfile.dev
+    container_name: musicstream-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001
+      - REACT_APP_USER_SERVICE_URL=http://localhost:3002
+      - REACT_APP_ANALYTICS_SERVICE_URL=http://localhost:3003
+      - REACT_APP_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ../frontend/react-app:/app
+      - /app/node_modules
+    depends_on:
+      - catalog-service
+      - user-service
+      - analytics-service
+    stdin_open: true
+    tty: true
+    networks:
+      - musicstream-network
+
+  # ==========================================================================
+  # FIREBASE EMULATORS (Para desarrollo)
+  # ==========================================================================
+  firestore:
+    image: ghcr.io/googlecloudplatform/cloud-firestore-emulator:latest
+    container_name: musicstream-firestore
+    ports:
+      - "8080:8080"
+    environment:
+      - FIRESTORE_PROJECT_ID=musicstream-dev
+      - PORT=8080
+    networks:
+      - musicstream-network
+
+  # ==========================================================================
+  # REDIS (Para cache y sesiones)
+  # ==========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: musicstream-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - musicstream-network
+
+  # ==========================================================================
+  # PGADMIN (Para administrar PostgreSQL)
+  # ==========================================================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: musicstream-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@musicstream.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - musicstack-network
+
+# ============================================================================
+# VOLUMES
+# ============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ============================================================================
+# NETWORKS
+# ============================================================================
+networks:
+  musicstream-network:
+    driver: bridge
+    name: musicstream-dev-network

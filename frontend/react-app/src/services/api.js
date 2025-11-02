@@ -38,6 +38,7 @@ export const catalogAPI = {
   getSongs: (params) => api.get('/api/songs', { params }),
   searchSongs: (query) => api.get(`/api/search?q=${query}`),
   getArtistById: (id) => api.get(`/api/artists/${id}`),
+  getStreamUrl: (songId) => api.get(`/api/songs/${songId}/stream-url`),
 };
 
 export const userAPI = {
