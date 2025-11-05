@@ -19,7 +19,7 @@ export const useSongStream = (songId) => {
         setError(null);
 
         // Llamar al backend para obtener URL firmada
-        const response = await api.get(`/api/songs/${songId}/stream-url`);
+        const response = await api.get(`/songs/${songId}/stream-url`);
         const { url: newUrl, expiresIn } = response.data;
 
         setUrl(newUrl);

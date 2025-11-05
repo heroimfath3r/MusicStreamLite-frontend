@@ -3,26 +3,24 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.svg" />
-    <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon.png" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    
 
     <meta name="msapplication-TileColor" content="#000000" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content="MusicStream Lite - Descubre y escucha música emergente. La mejor plataforma para artistas independientes y amantes de la música." />
     <meta name="keywords" content="música, streaming, artistas, canciones, playlist, música independiente" />
     <meta name="author" content="MusicStream Team" />
+    <meta name="theme-color" content="#000000" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://musicstream.example.com/" />
     <meta property="og:title" content="MusicStream Lite - Tu plataforma de música" />
     <meta property="og:description" content="Descubre y escucha música emergente. Millones de canciones, tus artistas favoritos, todo en un solo lugar." />
-    <meta property="og:image" content="%PUBLIC_URL%/social-preview.jpg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image" content="%PUBLIC_URL%/logo512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
     <meta property="og:locale" content="es_ES" />
     <meta property="og:site_name" content="MusicStream Lite" />
 
@@ -31,7 +29,7 @@
     <meta property="twitter:url" content="https://musicstream.example.com/" />
     <meta property="twitter:title" content="MusicStream Lite - Tu plataforma de música" />
     <meta property="twitter:description" content="Descubre y escucha música emergente. Millones de canciones, tus artistas favoritos, todo en un solo lugar." />
-    <meta property="twitter:image" content="%PUBLIC_URL%/social-preview.jpg" />
+    <meta property="twitter:image" content="%PUBLIC_URL%/logo512.png" />
 
     <!-- PWA Configuration -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -41,16 +39,9 @@
     <!-- Preload critical resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
-    
-    <!-- DNS prefetch for external domains -->
-    <link rel="dns-prefetch" href="//api.musicstream.example.com" />
-    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="//fonts.gstatic.com" />
 
-    <!-- Critical CSS (inline for above-the-fold content) -->
+    <!-- Critical CSS -->
     <style>
-      /* Critical CSS for initial loading */
       :root {
         --apple-black: #000000;
         --apple-dark: #1A1A1A;
@@ -74,13 +65,12 @@
       body {
         background: linear-gradient(135deg, var(--apple-black) 0%, var(--apple-dark) 100%);
         color: var(--apple-text);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
         min-height: 100vh;
         overflow-x: hidden;
         line-height: 1.6;
       }
 
-      /* Loading screen styles */
       .loading-container {
         position: fixed;
         top: 0;
@@ -93,6 +83,7 @@
         justify-content: center;
         align-items: center;
         z-index: 9999;
+        transition: opacity 0.3s ease-out;
       }
 
       .loading-spinner {
@@ -122,7 +113,6 @@
         100% { transform: rotate(360deg); }
       }
 
-      /* Hide app until loaded */
       #root {
         opacity: 0;
         transition: opacity 0.3s ease-in-out;
@@ -132,7 +122,6 @@
         opacity: 1;
       }
 
-      /* Scrollbar styling */
       ::-webkit-scrollbar {
         width: 8px;
       }
@@ -150,21 +139,20 @@
         background: var(--apple-gray);
       }
 
-      /* Selection color */
       ::selection {
         background: var(--apple-blue);
         color: var(--apple-white);
       }
 
-      /* Focus styles for accessibility */
-      *:focus {
+      *:focus-visible {
         outline: 2px solid var(--apple-blue);
         outline-offset: 2px;
       }
 
-      /* Reduced motion for accessibility */
       @media (prefers-reduced-motion: reduce) {
-        * {
+        *,
+        *::before,
+        *::after {
           animation-duration: 0.01ms !important;
           animation-iteration-count: 1 !important;
           transition-duration: 0.01ms !important;
@@ -176,8 +164,8 @@
   </head>
   <body>
     <noscript>
-      <div style="text-align: center; padding: 50px; background: var(--apple-dark); color: var(--apple-text);">
-        <h1 style="margin-bottom: 20px; color: var(--apple-red);">JavaScript Requerido</h1>
+      <div style="text-align: center; padding: 50px; background: #1A1A1A; color: #F5F5F7;">
+        <h1 style="margin-bottom: 20px; color: #FA233B;">JavaScript Requerido</h1>
         <p style="margin-bottom: 20px;">Necesitas tener JavaScript habilitado para usar MusicStream Lite.</p>
         <p>Por favor, habilita JavaScript en tu navegador y recarga la página.</p>
       </div>
@@ -193,102 +181,58 @@
     <!-- React app root -->
     <div id="root"></div>
 
-    <!-- Load non-critical CSS -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'" />
-
-    <!-- Service Worker Registration -->
     <script>
-      // Register service worker for PWA
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js')
-            .then(function(registration) {
-              console.log('SW registered: ', registration);
-            })
-            .catch(function(registrationError) {
-              console.log('SW registration failed: ', registrationError);
-            });
-        });
-      }
-
       // Hide loading screen when app is ready
-      window.addEventListener('DOMContentLoaded', function() {
-        // Simulate loading time or wait for React to be ready
-        setTimeout(function() {
-          const loadingScreen = document.getElementById('loading-screen');
-          const root = document.getElementById('root');
-          
-          if (loadingScreen) {
-            loadingScreen.style.opacity = '0';
-            setTimeout(function() {
-              loadingScreen.remove();
-              if (root) {
-                root.classList.add('loaded');
-              }
-            }, 300);
-          } else if (root) {
-            root.classList.add('loaded');
-          }
-        }, 1000); // Adjust this timeout as needed
-      });
+      (function() {
+        var maxAttempts = 50; // 5 segundos máximo
+        var attempts = 0;
 
-      // Error handling for failed resources
-      window.addEventListener('error', function(e) {
-        console.error('Error loading resource:', e);
-      });
+        function checkAndHideLoader() {
+          var loadingScreen = document.getElementById('loading-screen');
+          var root = document.getElementById('root');
+          
+          attempts++;
+
+          if (root && root.children.length > 0) {
+            if (loadingScreen) {
+              loadingScreen.style.opacity = '0';
+              setTimeout(function() {
+                loadingScreen.remove();
+              }, 300);
+            }
+            if (root) {
+              root.classList.add('loaded');
+            }
+          } else if (attempts < maxAttempts) {
+            setTimeout(checkAndHideLoader, 100);
+          } else {
+            console.warn('Loading screen timeout');
+            if (loadingScreen) {
+              loadingScreen.remove();
+            }
+            if (root) {
+              root.classList.add('loaded');
+            }
+          }
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', checkAndHideLoader);
+        } else {
+          checkAndHideLoader();
+        }
+      })();
 
       // Performance monitoring
       window.addEventListener('load', function() {
-        if ('performance' in window) {
-          const perfData = window.performance.timing;
-          const loadTime = perfData.loadEventEnd - perfData.navigationStart;
-          console.log('Page load time:', loadTime + 'ms');
-          
-          // Send to analytics if available
-          if (window.gtag) {
-            gtag('event', 'timing_complete', {
-              'name': 'page_load',
-              'value': loadTime,
-              'event_category': 'Load Performance'
-            });
-          }
+        if ('performance' in window && window.performance.timing) {
+          setTimeout(function() {
+            var perfData = window.performance.timing;
+            var loadTime = perfData.loadEventEnd - perfData.navigationStart;
+            console.log('📊 Page load time:', loadTime + 'ms');
+          }, 0);
         }
       });
-
-      // Environment detection
-      window.MusicStreamEnv = {
-        version: '%REACT_APP_VERSION%',
-        environment: '%REACT_APP_ENV%',
-        apiUrl: '%REACT_APP_API_URL%'
-      };
     </script>
-
-    <!-- Google Analytics (optional) -->
-    <% if (process.env.REACT_APP_GA_TRACKING_ID) { %>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=%REACT_APP_GA_TRACKING_ID%"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', '%REACT_APP_GA_TRACKING_ID%', {
-        page_title: document.title,
-        page_location: window.location.href
-      });
-    </script>
-    <% } %>
-
-    <!-- Sentry Error Tracking (optional) -->
-    <% if (process.env.REACT_APP_SENTRY_DSN) { %>
-    <script src="https://browser.sentry-cdn.com/7.28.0/bundle.tracing.min.js" crossorigin="anonymous"></script>
-    <script>
-      Sentry.init({
-        dsn: '%REACT_APP_SENTRY_DSN%',
-        environment: '%REACT_APP_ENV%',
-        release: 'musicstream-frontend@%REACT_APP_VERSION%',
-        integrations: [new Sentry.BrowserTracing()],
-        tracesSampleRate: 0.1,
-      });
-    </script>
-    <% } %>
   </body>
 </html>

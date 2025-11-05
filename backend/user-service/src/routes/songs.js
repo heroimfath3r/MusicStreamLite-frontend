@@ -11,9 +11,10 @@ import {
 
 const router = express.Router();
 
-router.get('/', getAllSongs);
+
 router.get('/:id/stream-url', getStreamUrl);  // ✅ Esta debe ir ANTES de /:id
 router.get('/:id', getSongById);
+router.get('/', getAllSongs);
 router.post('/', createSong);
 router.put('/:id', updateSong);
 router.delete('/:id', deleteSong);

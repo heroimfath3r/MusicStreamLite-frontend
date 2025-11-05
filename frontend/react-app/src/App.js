@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PlayerProvider } from './contexts/PlayerContext.jsx';
 
 import Signup from './pages/Signup.js';
 import Home from './pages/Home.js';
@@ -8,8 +9,6 @@ import Search from './pages/Search.js';
 import Library from './pages/Library.js';
 import Login from './pages/Login.js';
 
-import Header from './components/Header.js';
-import MusicPlayer from './components/MusicPlayer.js'
 import PublicLayout from './components/PublicLayout.jsx';
 import PrivateLayout from './components/PrivateLayout.jsx';
 
@@ -27,7 +26,6 @@ const pageTransition = {
   duration: 0.5,
 };
 
-// 🔹 Este componente separa el Router de las animaciones
 function AnimatedRoutes() {
   const location = useLocation();
 
@@ -43,7 +41,7 @@ function AnimatedRoutes() {
         key={location.pathname}
       >
         <Routes location={location} key={location.pathname}>
-          {/* 🔸 Rutas públicas (sin Header ni MusicPlayer) */}
+          {/* Rutas públicas (sin Header ni MusicPlayer) */}
           <Route
             path="/signup"
             element={
@@ -52,29 +50,7 @@ function AnimatedRoutes() {
               </PublicLayout>
             }
           />
-          {/* 🔸 Rutas privadas (con Header y MusicPlayer) */}
-          <Route
-            path="/"
-            element={
-              <PrivateLayout>
-                <Home />
-              </PrivateLayout>
-            }
-          />
-
-          <Route element={<PrivateLayout />}>
-  <Route path="/home" element={<Home />} />
-  <Route path="/search" element={<Search />} />
-  <Route path="/library" element={<Library />} />
-</Route>
-          <Route
-            path="/library"
-            element={
-              <PrivateLayout>
-                <Library />
-              </PrivateLayout>
-            }
-          />
+          
           <Route
             path="/login"
             element={
@@ -83,6 +59,14 @@ function AnimatedRoutes() {
               </PublicLayout>
             }
           />
+
+          {/* Rutas privadas (con Header, Sidebar y MusicPlayer) */}
+          <Route element={<PrivateLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/library" element={<Library />} />
+          </Route>
         </Routes>
       </motion.main>
     </AnimatePresence>
@@ -91,13 +75,14 @@ function AnimatedRoutes() {
 
 function App() {
   return (
-    <Router>
-      <div className="app-container">
-        <AnimatedRoutes />
-      </div>
-    </Router>
+    <PlayerProvider>
+      <Router>
+        <div className="app-container">
+          <AnimatedRoutes />
+        </div>
+      </Router>
+    </PlayerProvider>
   );
 }
 
 export default App;
-

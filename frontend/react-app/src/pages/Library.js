@@ -1,9 +1,10 @@
-// src/pages/Library.js
+// frontend/react-app/src/pages/Library.js
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaSearch, FaThLarge, FaList, FaFilter } from 'react-icons/fa';
 import SongCard from '../components/songCard.js';
 import { songsAPI, usersAPI } from '../services/api.js';
+import { usePlayer } from '../contexts/PlayerContext.jsx'; // ✅ Importar contexto
 import './Library.css';
 
 const Library = () => {
@@ -13,9 +14,11 @@ const Library = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' o 'list'
-  const [sortBy, setSortBy] = useState('title'); // 'title', 'artist', 'duration'
-  const [currentPlaying, setCurrentPlaying] = useState(null);
+  const [viewMode, setViewMode] = useState('grid');
+  const [sortBy, setSortBy] = useState('title');
+
+  // ✅ Obtener funciones del contexto del player
+  const { playSong, currentSong, setPlayQueue } = usePlayer();
 
   // Cargar canciones al montar el componente
   useEffect(() => {
@@ -78,9 +81,16 @@ const Library = () => {
     }
   };
 
-  const handlePlay = async (song) => {
-    setCurrentPlaying(song.song_id);
-    console.log('Playing:', song);
+  // ✅ NUEVA FUNCIÓN: Reproducir canción usando el contexto
+  const handlePlay = async (song, index) => {
+    console.log('🎵 Library - Reproduciendo:', song);
+    
+    // Establecer la cola con todas las canciones filtradas
+    setPlayQueue(filteredSongs, index);
+    
+    // La función playSong ya está incluida en setPlayQueue
+    // pero podemos llamarla explícitamente si queremos
+    playSong(song);
     
     // Registrar reproducción
     try {
@@ -112,6 +122,11 @@ const Library = () => {
 
   const isFavorite = (songId) => {
     return favorites.some(f => f.songId === songId);
+  };
+
+  // ✅ Verificar si una canción está reproduciéndose actualmente
+  const isCurrentlyPlaying = (songId) => {
+    return currentSong?.song_id === songId;
   };
 
   if (loading) {
@@ -235,13 +250,13 @@ const Library = () => {
             <p>No se encontraron canciones</p>
           </div>
         ) : (
-          filteredSongs.map((song) => (
+          filteredSongs.map((song, index) => (
             <SongCard
               key={song.song_id}
               song={song}
-              onPlay={handlePlay}
+              onPlay={() => handlePlay(song, index)} // ✅ Pasar índice también
               onAddToFavorites={handleAddToFavorites}
-              isPlaying={currentPlaying === song.song_id}
+              isPlaying={isCurrentlyPlaying(song.song_id)} // ✅ Usar función actualizada
               isFavorite={isFavorite(song.song_id)}
             />
           ))

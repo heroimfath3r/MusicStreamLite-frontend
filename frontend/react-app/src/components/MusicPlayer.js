@@ -1,5 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+// frontend/react-app/src/components/MusicPlayer.js
+import React, { useState, useEffect } from 'react';
 import { useSongStream } from '../hooks/useSongStream.js';
+import { usePlayer } from '../contexts/PlayerContext.jsx';
 import { motion } from 'framer-motion';
 import { 
   FaPlay, 
@@ -17,8 +19,16 @@ import {
 import './MusicPlayer.css';
 
 const MusicPlayer = () => {
-  const audioRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const { 
+    currentSong, 
+    isPlaying, 
+    togglePlayPause,
+    playNext,
+    playPrevious,
+    audioRef,
+    setIsPlaying 
+  } = usePlayer();
+
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
@@ -27,60 +37,90 @@ const MusicPlayer = () => {
   const [shuffleMode, setShuffleMode] = useState(false);
   const [repeatMode, setRepeatMode] = useState(0);
 
-  // Canción actual
-  const [currentSong, setCurrentSong] = useState({
-    id: 38,
-    title: "Find Me",
-    artist: "XXXTENTACION", 
-    cover: "https://storage.googleapis.com/music-stream-lite-bucket/Cover-XXXTENTACION-Find-me.jpeg",
-    streamUrl: "https://storage.googleapis.com/music-stream-lite-bucket/xxxtentacion-Find-Me.mp3"
-  });
+  const { url: streamUrl, loading: urlLoading } = useSongStream(currentSong?.song_id);
 
-  // Obtener URL firmada automáticamente
-  const { url: streamUrl, loading: urlLoading } = useSongStream(currentSong.id);
-  console.log('🎵 MusicPlayer montado, currentSong.id:', currentSong.id, 'streamUrl:', streamUrl, 'loading:', urlLoading);
+  // ============================================
+  // ✅ FIX: Cargar y reproducir cuando streamUrl esté listo
+  // ============================================
   useEffect(() => {
-    // 1. Asegúrate de que tenemos la URL final y que no estamos cargando
-    if (streamUrl && !urlLoading) {
-        // 2. Establecer el nuevo src y cargar la media
-        if (audioRef.current.src !== streamUrl) {
-             audioRef.current.src = streamUrl;
-             audioRef.current.load(); // Intenta forzar la carga de la nueva fuente
-
-             // 3. Opcional: Si el usuario ya había pulsado Play o si quieres inicio automático
-             if (isPlaying) { 
-                 // Necesario debido a las políticas de Autoplay. Puede fallar si no hay interacción previa.
-                 audioRef.current.play().catch(error => {
-                    console.error("🚫 Falló el intento de Autoplay:", error);
-                    // Podrías poner aquí un estado de error o un mensaje al usuario.
-                 });
-             }
-        }
+    // Validar que tenemos todo lo necesario
+    if (!streamUrl || urlLoading || !audioRef.current || !currentSong) {
+      return;
     }
-}, [streamUrl, urlLoading]);
 
-  // Sincronizar volumen con el audio
+    const audio = audioRef.current;
+    
+    // Solo actualizar si la URL realmente cambió
+    if (audio.src !== streamUrl) {
+      console.log('🔄 Cargando canción:', currentSong.title);
+      
+      // Pausar cualquier reproducción anterior
+      audio.pause();
+      
+      // Establecer nueva fuente
+      audio.src = streamUrl;
+      
+      // Cargar el audio
+      audio.load();
+      
+      // ✅ IMPORTANTE: Esperar a que el audio esté listo antes de reproducir
+      const handleCanPlay = () => {
+        console.log('✅ Audio listo, reproduciendo automáticamente');
+        
+        // Solo reproducir si el estado dice que debería estar reproduciéndose
+        if (isPlaying) {
+          const playPromise = audio.play();
+          
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                console.log('✅ Reproducción iniciada con éxito');
+              })
+              .catch(error => {
+                console.error('❌ Error al reproducir:', error);
+                setIsPlaying(false);
+              });
+          }
+        }
+        
+        // Limpiar el listener
+        audio.removeEventListener('canplay', handleCanPlay);
+      };
+      
+      // Escuchar cuando el audio esté listo
+      audio.addEventListener('canplay', handleCanPlay);
+      
+      // Cleanup: Remover listener si el componente se desmonta
+      return () => {
+        audio.removeEventListener('canplay', handleCanPlay);
+      };
+    }
+  }, [streamUrl, urlLoading, currentSong]); // ✅ Solo estas dependencias
+
+  // ============================================
+  // Sincronizar volumen
+  // ============================================
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume;
     }
   }, [volume, isMuted]);
 
-  // Actualizar tiempo actual de reproducción
+  // ============================================
+  // HANDLERS
+  // ============================================
   const handleTimeUpdate = () => {
     if (audioRef.current) {
       setCurrentTime(audioRef.current.currentTime);
     }
   };
 
-  // Obtener duración cuando carga el audio
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
       setDuration(audioRef.current.duration);
     }
   };
 
-  // Cambiar tiempo de reproducción
   const handleProgressChange = (e) => {
     const newTime = parseFloat(e.target.value);
     if (audioRef.current) {
@@ -89,28 +129,6 @@ const MusicPlayer = () => {
     }
   };
 
- // Toggle play/pause
-const togglePlayPause = () => {
-    // Si la URL está cargando, aún así cambiamos el estado para que el useEffect intente el play cuando termine.
-    if (audioRef.current) {
-        if (isPlaying) {
-            audioRef.current.pause();
-        } else {
-            // Si la URL está lista, intentamos tocar inmediatamente.
-            // Si NO está lista, el useEffect lo intentará cuando lo esté.
-            if (streamUrl && !urlLoading) {
-                 audioRef.current.play().catch(error => {
-                     console.error("🚫 Falló al intentar reproducir inmediatamente:", error);
-                 });
-            } else {
-                 console.log('⏳ Intentando reproducir, pero la URL aún no está lista. Esperando el streamUrl...');
-            }
-        }
-        setIsPlaying(!isPlaying);
-    }
-};
-
-  // Cambiar volumen
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
@@ -119,22 +137,18 @@ const togglePlayPause = () => {
     }
   };
 
-  // Toggle mute
   const toggleMute = () => {
     setIsMuted(!isMuted);
   };
 
-  // Toggle shuffle
   const toggleShuffle = () => {
     setShuffleMode(!shuffleMode);
   };
 
-  // Cambiar modo de repetición
   const toggleRepeat = () => {
     setRepeatMode((prev) => (prev + 1) % 3);
   };
 
-  // Formatear tiempo en MM:SS
   const formatTime = (time) => {
     if (isNaN(time)) return '0:00';
     const minutes = Math.floor(time / 60);
@@ -142,21 +156,24 @@ const togglePlayPause = () => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // Cuando termina la canción
   const handleSongEnd = () => {
     if (repeatMode === 2) {
-      // Repetir una canción
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
         audioRef.current.play();
       }
     } else {
-      // Siguiente canción o parar
-      setIsPlaying(false);
+      playNext();
     }
   };
 
-  // Animaciones
+  // ============================================
+  // RENDER
+  // ============================================
+  if (!currentSong) {
+    return null;
+  }
+
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
@@ -178,13 +195,22 @@ const togglePlayPause = () => {
       initial="hidden"
       animate="visible"
     >
-     {/* Audio element */}
       <audio
         ref={audioRef}
-        src={streamUrl}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleSongEnd}
+        onPlay={() => {
+          console.log('🎵 Audio onPlay event');
+          setIsPlaying(true);
+        }}
+        onPause={() => {
+          console.log('⏸️ Audio onPause event');
+          setIsPlaying(false);
+        }}
+        onError={(e) => {
+          console.error('❌ Audio error:', e.target.error);
+        }}
       />
 
       {/* Left side - Song info */}
@@ -193,12 +219,15 @@ const togglePlayPause = () => {
           className="now-playing-cover"
           whileHover={{ scale: 1.05 }}
         >
-          <img src={currentSong.cover} alt={currentSong.title} />
+          <img 
+            src={currentSong.cover_image_url || 'https://via.placeholder.com/56x56/1a1f3a/007AFF?text=No+Cover'} 
+            alt={currentSong.title} 
+          />
         </motion.div>
 
         <div className="now-playing-info">
-          <div className="now-playing-title">{currentSong.title}</div>
-          <div className="now-playing-artist">{currentSong.artist}</div>
+          <div className="now-playing-title">{currentSong.title || 'Sin título'}</div>
+          <div className="now-playing-artist">{currentSong.artist_name || 'Artista desconocido'}</div>
         </div>
 
         <motion.button
@@ -226,6 +255,7 @@ const togglePlayPause = () => {
 
           <motion.button
             className="control-btn"
+            onClick={playPrevious}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             title="Anterior"
@@ -245,6 +275,7 @@ const togglePlayPause = () => {
 
           <motion.button
             className="control-btn"
+            onClick={playNext}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             title="Siguiente"
