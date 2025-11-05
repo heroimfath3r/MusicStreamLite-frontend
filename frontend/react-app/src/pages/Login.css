@@ -14,7 +14,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 25%, #2d1b4e 50%, #1a1f3a 75%, #0f1729 100%);
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 25%, #1e2348 50%, #1a1f3a 75%, #0f1729 100%);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
   padding: 20px;
@@ -64,7 +64,7 @@
   left: -10%;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(255, 45, 85, 0.25) 0%, rgba(191, 90, 242, 0.2) 40%, transparent 70%);
+  background: radial-gradient(circle, rgba(94, 92, 230, 0.3) 0%, rgba(0, 122, 255, 0.2) 40%, transparent 70%);
   animation-delay: 3s;
 }
 
@@ -121,7 +121,7 @@
   width: 68px;
   height: 68px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #007AFF 0%, #5E5CE6 50%, #FF2D55 100%);
+  background: linear-gradient(135deg, #007AFF 0%, #5E5CE6 100%);
   margin-bottom: 20px;
   box-shadow:
     0 8px 24px rgba(0, 122, 255, 0.4),
@@ -297,7 +297,7 @@
   font-size: 16px;
   font-weight: 600;
   color: white;
-  background: linear-gradient(135deg, #007AFF 0%, #5E5CE6 50%, #BF5AF2 100%);
+  background: linear-gradient(135deg, #007AFF 0%, #5E5CE6 100%);
   background-size: 200% 100%;
   background-position: 0% 50%;
   border: none;
@@ -417,7 +417,7 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, #007AFF, #5E5CE6, #BF5AF2);
+  background: linear-gradient(90deg, #007AFF, #5E5CE6);
   transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
