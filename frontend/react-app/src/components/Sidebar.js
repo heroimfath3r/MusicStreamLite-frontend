@@ -85,15 +85,9 @@ const Sidebar = () => {
             </NavLink>
           </motion.li>
           <motion.li variants={itemVariants}>
-<<<<<<< HEAD
             <NavLink to="/browse" className="sidebar-link">
               <FaNewspaper size={18} />
               <span>Novedades</span>
-=======
-            <NavLink to="/radio" className="sidebar-link">
-              <FaBroadcastTower size={18} />
-              <span>Radio</span>
->>>>>>> 87301753c5d892bb6d1f941b06125cceeae07e5e
             </NavLink>
           </motion.li>
         </motion.ul>
