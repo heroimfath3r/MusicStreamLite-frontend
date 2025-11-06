@@ -1,49 +1,170 @@
-import React, { useState, useEffect } from 'react';
-import { searchAPI } from '../services/api.js';
+import React, { useState, useMemo, useEffect } from 'react';
+// import { searchAPI } from '../services/api.js'; // Eliminado o comentado si no se usa
+
 import './Search.css';
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
-  const [searchResults, setSearchResults] = useState({
-    songs: [],
-    artists: [],
-    albums: []
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  // Se han eliminado los estados searchResults, loading y error,
+  // ya que la lógica se centraliza en getSearchResults (useMemo) y es sincrónica.
+  // Si planeas usar la API de nuevo, deberías reintroducirlos.
 
-  // Realizar búsqueda cuando cambia el query
+  // Realizar búsqueda con debounce si se usa una API real
+  // En este ejemplo con datos locales, usaremos solo useMemo.
+  /*
   useEffect(() => {
-    const performSearch = async () => {
-      if (!searchQuery || searchQuery.trim().length === 0) {
-        setSearchResults({ songs: [], artists: [], albums: [] });
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await searchAPI.searchAll(searchQuery);
-
-        if (response.success) {
-          setSearchResults(response.results);
-        } else {
-          setError('Error al realizar la búsqueda');
-        }
-      } catch (err) {
-        console.error('Error en búsqueda:', err);
-        setError('Error al conectar con el servidor');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Debounce: esperar 500ms después de que el usuario deje de escribir
-    const timeoutId = setTimeout(performSearch, 500);
-    return () => clearTimeout(timeoutId);
+    // ... Lógica de debounce con searchAPI.searchAll ...
   }, [searchQuery]);
+  */
+
+  // Base de datos completa con relaciones (simulación de datos)
+  const database = {
+    songs: [
+      { id: 1, title: "Blinding Lights", artistId: 1, artist: "The Weeknd", albumId: 1, album: "After Hours", duration: "3:20" },
+      { id: 2, title: "Save Your Tears", artistId: 1, artist: "The Weeknd", albumId: 1, album: "After Hours", duration: "3:35" },
+      { id: 3, title: "In Your Eyes", artistId: 1, artist: "The Weeknd", albumId: 1, album: "After Hours", duration: "3:57" },
+      { id: 4, title: "Levitating", artistId: 2, artist: "Dua Lipa", albumId: 2, album: "Future Nostalgia", duration: "3:23" },
+      { id: 5, title: "Don't Start Now", artistId: 2, artist: "Dua Lipa", albumId: 2, album: "Future Nostalgia", duration: "3:03" },
+      { id: 6, title: "Physical", artistId: 2, artist: "Dua Lipa", albumId: 2, album: "Future Nostalgia", duration: "3:13" },
+      { id: 7, title: "Bohemian Rhapsody", artistId: 3, artist: "Queen", albumId: 3, album: "A Night at the Opera", duration: "5:55" },
+      { id: 8, title: "We Will Rock You", artistId: 3, artist: "Queen", albumId: 4, album: "News of the World", duration: "2:02" },
+    ],
+    artists: [
+      { id: 1, name: "The Weeknd", genre: "R&B" },
+      { id: 2, name: "Dua Lipa", genre: "Pop" },
+      { id: 3, name: "Queen", genre: "Rock" }
+    ],
+    albums: [
+      { id: 1, title: "After Hours", artistId: 1, artist: "The Weeknd", year: 2020 },
+      { id: 2, title: "Future Nostalgia", artistId: 2, artist: "Dua Lipa", year: 2020 },
+      { id: 3, title: "A Night at the Opera", artistId: 3, artist: "Queen", year: 1975 },
+      { id: 4, title: "News of the World", artistId: 3, artist: "Queen", year: 1977 }
+    ]
+  };
+
+  // Función para búsqueda inteligente con relaciones cruzadas (Usando useMemo para optimización)
+  const getSearchResults = useMemo(() => {
+    if (!searchQuery.trim()) return { songs: [], artists: [], albums: [] };
+
+    const query = searchQuery.toLowerCase().trim();
+    const results = { songs: [], artists: [], albums: [] };
+    const foundArtistIds = new Set();
+    const foundAlbumIds = new Set();
+
+    // 1. Buscar artistas que coincidan
+    const matchingArtists = database.artists.filter(artist =>
+      artist.name.toLowerCase().includes(query) ||
+      artist.genre.toLowerCase().includes(query)
+    );
+
+    matchingArtists.forEach(artist => {
+      if (!results.artists.find(a => a.id === artist.id)) {
+        results.artists.push(artist);
+        foundArtistIds.add(artist.id);
+      }
+    });
+
+    // 2. Buscar álbumes que coincidan
+    const matchingAlbums = database.albums.filter(album =>
+      album.title.toLowerCase().includes(query) ||
+      album.artist.toLowerCase().includes(query)
+    );
+
+    matchingAlbums.forEach(album => {
+      if (!results.albums.find(a => a.id === album.id)) {
+        results.albums.push(album);
+        foundAlbumIds.add(album.id);
+      }
+      // Agregar el artista del álbum si no está ya (lógica de relaciones cruzadas)
+      if (!foundArtistIds.has(album.artistId)) {
+        const artist = database.artists.find(a => a.id === album.artistId);
+        if (artist && !results.artists.find(a => a.id === artist.id)) {
+          results.artists.push(artist);
+          foundArtistIds.add(artist.id);
+        }
+      }
+    });
+
+    // 3. Buscar canciones que coincidan
+    const matchingSongs = database.songs.filter(song =>
+      song.title.toLowerCase().includes(query) ||
+      song.artist.toLowerCase().includes(query) ||
+      song.album.toLowerCase().includes(query)
+    );
+
+    matchingSongs.forEach(song => {
+      if (!results.songs.find(s => s.id === song.id)) {
+        results.songs.push(song);
+      }
+
+      // Agregar el artista de la canción si no está ya
+      if (!foundArtistIds.has(song.artistId)) {
+        const artist = database.artists.find(a => a.id === song.artistId);
+        if (artist && !results.artists.find(a => a.id === artist.id)) {
+          results.artists.push(artist);
+          foundArtistIds.add(artist.id);
+        }
+      }
+
+      // Agregar el álbum de la canción si no está ya
+      if (!foundAlbumIds.has(song.albumId)) {
+        const album = database.albums.find(a => a.id === song.albumId);
+        if (album && !results.albums.find(a => a.id === album.id)) {
+          results.albums.push(album);
+          foundAlbumIds.add(album.id);
+        }
+      }
+    });
+
+    // 4. Si encontramos artistas, agregar TODAS sus canciones y álbumes (relación cruzada)
+    // Nota: El código original ya tenía esta lógica y la mantendremos para una búsqueda "inteligente"
+    foundArtistIds.forEach(artistId => {
+      const artistSongs = database.songs.filter(song => song.artistId === artistId);
+      artistSongs.forEach(song => {
+        if (!results.songs.find(s => s.id === song.id)) {
+          results.songs.push(song);
+        }
+      });
+
+      const artistAlbums = database.albums.filter(album => album.artistId === artistId);
+      artistAlbums.forEach(album => {
+        if (!results.albums.find(a => a.id === album.id)) {
+          results.albums.push(album);
+          foundAlbumIds.add(album.id);
+        }
+      });
+    });
+
+    // 5. Si encontramos álbumes, agregar todas las canciones del álbum (relación cruzada)
+    foundAlbumIds.forEach(albumId => {
+      const albumSongs = database.songs.filter(song => song.albumId === albumId);
+      albumSongs.forEach(song => {
+        if (!results.songs.find(s => s.id === song.id)) {
+          results.songs.push(song);
+        }
+      });
+    });
+
+    return results;
+  }, [searchQuery]);
+
+  // Filtrar resultados según el tab activo (Usando useMemo)
+  const filteredResults = useMemo(() => {
+    const results = getSearchResults;
+    if (activeTab === 'all') {
+      return results;
+    }
+    return {
+      songs: activeTab === 'songs' ? results.songs : [],
+      artists: activeTab === 'artists' ? results.artists : [],
+      albums: activeTab === 'albums' ? results.albums : []
+    };
+  }, [getSearchResults, activeTab]);
+
+  // Se asume que no hay "loading" ni "error" para la demostración con datos locales
+  const loading = false;
+  const error = null;
 
   return (
     <div className="search-page">
@@ -89,98 +210,92 @@ const Search = () => {
               className={`tab ${activeTab === 'songs' ? 'active' : ''}`}
               onClick={() => setActiveTab('songs')}
             >
-              Canciones ({searchResults.songs?.length || 0})
+              Canciones ({getSearchResults.songs?.length || 0})
             </button>
             <button
               className={`tab ${activeTab === 'artists' ? 'active' : ''}`}
               onClick={() => setActiveTab('artists')}
             >
-              Artistas ({searchResults.artists?.length || 0})
+              Artistas ({getSearchResults.artists?.length || 0})
             </button>
             <button
               className={`tab ${activeTab === 'albums' ? 'active' : ''}`}
               onClick={() => setActiveTab('albums')}
             >
-              Álbumes ({searchResults.albums?.length || 0})
+              Álbumes ({getSearchResults.albums?.length || 0})
             </button>
           </div>
 
           <div className="results-content">
-            {(activeTab === 'all' || activeTab === 'songs') && (
+            {/* Sección de Canciones (Corregido: Usar filteredResults) */}
+            {(activeTab === 'all' || activeTab === 'songs') && filteredResults.songs.length > 0 && (
               <div className="results-section">
-                <h3>Canciones</h3>
-                {searchResults.songs && searchResults.songs.length > 0 ? (
-                  searchResults.songs.map(song => (
-                    <div key={song.id} className="result-item">
-                      <div className="song-info">
-                        <div className="song-cover"></div>
-                        <div className="song-details">
-                          <h4>{song.title}</h4>
-                          <p>{song.artist_name || 'Artista desconocido'}</p>
-                        </div>
+                <h3>Canciones {filteredResults.songs.length > 0 && `(${filteredResults.songs.length})`}</h3>
+                {filteredResults.songs.map(song => (
+                  <div key={song.id} className="result-item">
+                    <div className="song-info">
+                      <div className="song-cover"></div>
+                      <div className="song-details">
+                        <h4>{song.title}</h4>
+                        {/* Corregido: Usar 'artist' y 'album' que vienen del objeto song de la base de datos */}
+                        <p>{song.artist} • {song.album}</p>
                       </div>
-                      <span className="song-duration">{song.duration || 'N/A'}</span>
-                      <button className="play-btn-small">▶</button>
                     </div>
-                  ))
-                ) : (
-                  <p style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
-                    No se encontraron canciones
-                  </p>
-                )}
+                    <span className="song-duration">{song.duration || 'N/A'}</span>
+                    <button className="play-btn-small">▶</button>
+                  </div>
+                ))}
               </div>
             )}
 
-            {(activeTab === 'all' || activeTab === 'artists') && (
+            {/* Sección de Artistas (Corregido: Usar filteredResults) */}
+            {(activeTab === 'all' || activeTab === 'artists') && filteredResults.artists.length > 0 && (
               <div className="results-section">
-                <h3>Artistas</h3>
-                {searchResults.artists && searchResults.artists.length > 0 ? (
-                  <div className="artists-grid">
-                    {searchResults.artists.map(artist => (
-                      <div key={artist.id} className="artist-card">
-                        <div className="artist-avatar"></div>
-                        <div className="artist-info">
-                          <h4>{artist.name}</h4>
-                          <p>{artist.bio || 'Sin descripción'}</p>
-                        </div>
+                <h3>Artistas {filteredResults.artists.length > 0 && `(${filteredResults.artists.length})`}</h3>
+                <div className="artists-grid">
+                  {filteredResults.artists.map(artist => (
+                    <div key={artist.id} className="artist-card">
+                      <div className="artist-avatar"></div>
+                      <div className="artist-info">
+                        <h4>{artist.name}</h4>
+                        {/* Corregido: Usar 'genre' que viene del objeto artist de la base de datos */}
+                        <p>{artist.genre}</p>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
-                    No se encontraron artistas
-                  </p>
-                )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
-            {(activeTab === 'all' || activeTab === 'albums') && (
+            {/* Sección de Álbumes (Corregido: Eliminada la sección duplicada y uso de filteredResults) */}
+            {(activeTab === 'all' || activeTab === 'albums') && filteredResults.albums.length > 0 && (
               <div className="results-section">
-                <h3>Álbumes</h3>
-                {searchResults.albums && searchResults.albums.length > 0 ? (
-                  <div className="artists-grid">
-                    {searchResults.albums.map(album => (
-                      <div key={album.id} className="artist-card">
-                        <div className="artist-avatar"></div>
-                        <div className="artist-info">
-                          <h4>{album.title}</h4>
-                          <p>{album.artist_name || 'Artista desconocido'}</p>
-                          {album.release_date && (
-                            <p style={{ fontSize: '12px', color: '#888' }}>
-                              {new Date(album.release_date).getFullYear()}
-                            </p>
-                          )}
-                        </div>
+                <h3>Álbumes {filteredResults.albums.length > 0 && `(${filteredResults.albums.length})`}</h3>
+                <div className="albums-grid">
+                  {filteredResults.albums.map(album => (
+                    <div key={album.id} className="album-card">
+                      <div className="album-cover"></div>
+                      <div className="album-info">
+                        <h4>{album.title}</h4>
+                        {/* Corregido: Usar 'artist' y 'year' que vienen del objeto album de la base de datos */}
+                        <p>{album.artist} • {album.year}</p>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
-                    No se encontraron álbumes
-                  </p>
-                )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
+
+            {/* Mensaje cuando no hay resultados */}
+            {searchQuery &&
+              filteredResults.songs.length === 0 &&
+              filteredResults.artists.length === 0 &&
+              filteredResults.albums.length === 0 && (
+                <div className="no-results">
+                  <h3>No se encontraron resultados para "{searchQuery}"</h3>
+                  <p>Intenta con otras palabras clave</p>
+                </div>
+              )}
           </div>
         </div>
       )}
@@ -189,16 +304,16 @@ const Search = () => {
         <div className="search-suggestions">
           <h2>Explorar por categoría</h2>
           <div className="categories-grid">
-            <div className="category-card" style={{background: '#FF2D55'}}>
+            <div className="category-card" style={{ background: '#FF2D55' }}>
               <h3>Pop</h3>
             </div>
-            <div className="category-card" style={{background: '#5856D6'}}>
+            <div className="category-card" style={{ background: '#5856D6' }}>
               <h3>Rock</h3>
             </div>
-            <div className="category-card" style={{background: '#007AFF'}}>
+            <div className="category-card" style={{ background: '#007AFF' }}>
               <h3>Hip Hop</h3>
             </div>
-            <div className="category-card" style={{background: '#34C759'}}>
+            <div className="category-card" style={{ background: '#34C759' }}>
               <h3>Electrónica</h3>
             </div>
           </div>

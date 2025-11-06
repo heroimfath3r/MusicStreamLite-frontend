@@ -240,3 +240,66 @@
   font-weight: 700;
   color: white;
 }
+
+/* Estilos para Álbumes */
+.albums-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.album-card {
+  padding: 16px;
+  background: var(--apple-gray);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.album-card:hover {
+  background: var(--apple-light-gray);
+  transform: translateY(-4px);
+}
+
+.album-cover {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, var(--apple-blue), var(--apple-purple));
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.album-info h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.album-info p {
+  font-size: 14px;
+  color: var(--apple-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mensaje sin resultados */
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.no-results h3 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--apple-text);
+}
+
+.no-results p {
+  font-size: 16px;
+  color: var(--apple-text-secondary);
+}
