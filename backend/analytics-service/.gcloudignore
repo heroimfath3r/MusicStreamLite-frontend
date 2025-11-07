@@ -1,0 +1,115 @@
+# .gcloudignore
+# Archivos y directorios a ignorar al hacer deploy a Google Cloud
+# Colocar en la raíz de cada microservicio
+
+# ===========================================================
+# Node.js
+# ===========================================================
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn.lock
+package-lock.json
+.pnpm-debug.log
+
+# ===========================================================
+# Tests y Coverage
+# ===========================================================
+*.test.js
+*.spec.js
+__tests__/
+test/
+tests/
+coverage/
+.nyc_output/
+jest.config.js
+
+# ===========================================================
+# Development
+# ===========================================================
+.env
+.env.local
+.env.development
+.env.test
+*.dev.yml
+Dockerfile.dev
+nodemon.json
+
+# ===========================================================
+# IDEs y Editores
+# ===========================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ===========================================================
+# Git
+# ===========================================================
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# ===========================================================
+# Documentation
+# ===========================================================
+README.md
+CONTRIBUTING.md
+CHANGELOG.md
+docs/
+*.md
+
+# ===========================================================
+# Docker (solo para desarrollo local)
+# ===========================================================
+docker-compose*.yml
+Dockerfile.dev
+.dockerignore
+
+# ===========================================================
+# Logs
+# ===========================================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ===========================================================
+# OS
+# ===========================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===========================================================
+# Secrets (NUNCA deben estar aquí, pero por seguridad)
+# ===========================================================
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+service-account*.json
+credentials*.json
+.credentials/
+
+# ===========================================================
+# Build artifacts
+# ===========================================================
+dist/
+build/
+*.tgz
+*.tar.gz
+
+# ===========================================================
+# Misc
+# ===========================================================
+.cache/
+.temp/
+tmp/
+temp/

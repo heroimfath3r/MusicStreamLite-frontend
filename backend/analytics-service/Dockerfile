@@ -1,34 +1,52 @@
-# Use official Node.js runtime as base image
-FROM node:18-alpine
+# backend/analytics-service/Dockerfile.prod
+# Optimizado para Google Cloud Run
+FROM node:18-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files first (for better Docker layer caching)
+# Copy package files
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --only=production
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+# ============================================================
+# Production stage
+# ============================================================
+FROM node:18-alpine
 
-# Change ownership of the app directory
-RUN chown -R nextjs:nodejs /app
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm ci --only=production && \
+    npm cache clean --force
+
+# Copy source code from builder
+COPY --from=builder /app/src ./src
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 -G nodejs
+
+# Change ownership
+RUN chown -R nodejs:nodejs /app
 
 # Switch to non-root user
-USER nextjs
+USER nodejs
 
-# Expose port
-EXPOSE 3003
+# Cloud Run requires port 8080
+EXPOSE 8080
+ENV PORT=8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD node health-check.js
+  CMD node -e "require('http').get('http://localhost:8080/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Start the application
+# Start application
 CMD ["npm", "start"]
