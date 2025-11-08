@@ -354,6 +354,7 @@ async function getTrendingSongsData(limit, period) {
       .where('timestamp', '>=', startDate)
       .get();
 
+
     const songPlays = {};
 
     playsSnapshot.forEach(doc => {
@@ -366,7 +367,7 @@ async function getTrendingSongsData(limit, period) {
           totalDuration: 0,
           lastPlayed: play.timestamp
         };
-      }
+      } 
       
       songPlays[songId].playCount++;
       songPlays[songId].totalDuration += play.duration || 0;
