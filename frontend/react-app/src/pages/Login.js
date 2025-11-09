@@ -4,6 +4,7 @@
 // ============================================
 import React, { useState, useEffect } from 'react';
 import './Login.css';
+import { usersAPI } from '../services/api.js';  // ⭐ AGREGAR ESTO
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -48,85 +49,71 @@ const Login = () => {
     setErrors(prev => ({ ...prev, [name]: error }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Validar todos los campos
-    const newErrors = {};
-    Object.keys(formData).forEach(key => {
-      const error = validateField(key, formData[key]);
-      if (error) newErrors[key] = error;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  // Validar todos los campos
+  const newErrors = {};
+  Object.keys(formData).forEach(key => {
+    const error = validateField(key, formData[key]);
+    if (error) newErrors[key] = error;
+  });
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    return;
+  }
+
+  setLoading(true);
+  setMessage(null);
+
+  try {
+    console.log('📤 Enviando login:', {
+      email: formData.email,
+      password: '***'
     });
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
+    // ⭐ USAR usersAPI en lugar de fetch directo
+    const data = await usersAPI.login({
+      email: formData.email,
+      password: formData.password
+    });
+
+    console.log('✅ Login exitoso:', data);
+    
+    // Guardar token y datos del usuario
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+    }
+    if (data.user) {
+      localStorage.setItem('user', JSON.stringify(data.user));
     }
 
-    setLoading(true);
-    setMessage(null);
+    setMessage({ type: 'success', text: '¡Bienvenido de vuelta! 🎉' });
+    
+    // Redirigir después de 1.5 segundos
+    setTimeout(() => {
+      window.location.href = '/home';
+    }, 1500);
 
-    try {
-      console.log('📤 Enviando login:', {
-        email: formData.email,
-        password: '***'
-      });
-
-      const response = await fetch('http://localhost:3002/api/auth/login', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        })
-      });
-
-      console.log('📥 Response status:', response.status);
-
-      const data = await response.json();
-      console.log('📥 Response data:', data);
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al iniciar sesión');
-      }
-
-      console.log('✅ Login exitoso:', data);
-      
-      // Guardar token y datos del usuario
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-      }
-      if (data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-      }
-
-      setMessage({ type: 'success', text: '¡Bienvenido de vuelta! 🎉' });
-      
-      // Redirigir después de 1.5 segundos
-      setTimeout(() => {
-        window.location.href = '/home';
-      }, 1500);
-
-    } catch (error) {
-      console.error('❌ Error completo:', error);
-      
-      let errorMessage = 'Error al iniciar sesión. ';
-      
-      if (error.message === 'Failed to fetch') {
-        errorMessage += 'No se puede conectar al servidor. Verifica que el backend esté corriendo.';
-      } else if (error.message.includes('Invalid email or password')) {
-        errorMessage = 'Email o contraseña incorrectos';
-      } else {
-        errorMessage += error.message;
-      }
-      
-      setMessage({ type: 'error', text: errorMessage });
-    } finally {
-      setLoading(false);
+  } catch (error) {
+    console.error('❌ Error completo:', error);
+    
+    let errorMessage = 'Error al iniciar sesión. ';
+    
+    if (error.message === 'Network Error') {
+      errorMessage += 'No se puede conectar al servidor. Verifica que el backend esté corriendo.';
+    } else if (error.response?.data?.error) {
+      errorMessage = error.response.data.error;
+    } else {
+      errorMessage += error.message;
     }
-  };
+    
+    setMessage({ type: 'error', text: errorMessage });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="login-container">

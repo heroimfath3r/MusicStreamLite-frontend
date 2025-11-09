@@ -1,6 +1,7 @@
 //frontend/react-app/src/pages/Signup.js
 import React, { useState } from 'react';
 import './Signup.css';
+import { usersAPI } from '../services/api.js';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -36,82 +37,73 @@ const Signup = () => {
     setErrors(prev => ({ ...prev, [name]: error }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Validar todos los campos
-    const newErrors = {};
-    Object.keys(formData).forEach(key => {
-      const error = validateField(key, formData[key]);
-      if (error) newErrors[key] = error;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  // Validar todos los campos
+  const newErrors = {};
+  Object.keys(formData).forEach(key => {
+    const error = validateField(key, formData[key]);
+    if (error) newErrors[key] = error;
+  });
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    return;
+  }
+
+  setLoading(true);
+  setMessage(null);
+
+  try {
+    console.log('📤 Enviando datos:', {
+      email: formData.email,
+      name: formData.name,
+      password: '***'
     });
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
+    // ⭐ USAR usersAPI en lugar de fetch directo
+    const data = await usersAPI.register({
+      email: formData.email,
+      password: formData.password,
+      name: formData.name
+    });
+
+    console.log('✅ Registro exitoso:', data);
+    setMessage({ type: 'success', text: '¡Cuenta creada exitosamente! 🎉' });
+    setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+    
+    // Guardar token si viene en la respuesta
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+    }
+    if (data.user) {
+      localStorage.setItem('user', JSON.stringify(data.user));
     }
 
-    setLoading(true);
-    setMessage(null);
+    // Redirigir después de 2 segundos
+    setTimeout(() => {
+      window.location.href = '/home';
+    }, 2000);
 
-    try {
-      console.log('📤 Enviando datos:', {
-        email: formData.email,
-        name: formData.name,
-        password: '***'
-      });
-
-      const response = await fetch('http://localhost:3002/api/auth/register', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          name: formData.name
-        })
-      });
-
-      console.log('📥 Response status:', response.status);
-
-      const data = await response.json();
-      console.log('📥 Response data:', data);
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al registrar');
-      }
-
-      console.log('✅ Registro exitoso:', data);
-      setMessage({ type: 'success', text: '¡Cuenta creada exitosamente! 🎉' });
-      setFormData({ name: '', email: '', password: '', confirmPassword: '' });
-      
-      // Guardar token si viene en la respuesta
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-      }
-
-      // Redirigir después de 2 segundos
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 2000);
-
-    } catch (error) {
-      console.error('❌ Error completo:', error);
-      
-      let errorMessage = 'Error al crear la cuenta. ';
-      
-      if (error.message === 'Failed to fetch') {
-        errorMessage += 'No se puede conectar al servidor. Verifica que el backend esté corriendo.';
-      } else {
-        errorMessage += error.message;
-      }
-      
-      setMessage({ type: 'error', text: errorMessage });
-    } finally {
-      setLoading(false);
+  } catch (error) {
+    console.error('❌ Error completo:', error);
+    
+    let errorMessage = 'Error al crear la cuenta. ';
+    
+    if (error.message === 'Network Error') {
+      errorMessage += 'No se puede conectar al servidor. Verifica que el backend esté corriendo.';
+    } else if (error.response?.data?.error) {
+      errorMessage = error.response.data.error;
+    } else if (error.message) {
+      errorMessage += error.message;
     }
-  };
+    
+    setMessage({ type: 'error', text: errorMessage });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="signup-container">

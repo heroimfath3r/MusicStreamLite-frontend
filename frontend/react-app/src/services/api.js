@@ -5,9 +5,9 @@ import axios from 'axios';
 // 🔥 Configuración de URLs según el entorno
 // ============================================
 const API_URLS = {
-  user: process.env.REACT_APP_USER_API || 'http://localhost:3002',
-  catalog: process.env.REACT_APP_CATALOG_API || 'http://localhost:3001',
-  analytics: process.env.REACT_APP_ANALYTICS_API || 'http://localhost:3003'
+  user: process.env.REACT_APP_USER_API || 'https://user-service-586011919703.us-central1.run.app',
+  catalog: process.env.REACT_APP_CATALOG_API || 'https://catalog-service-418253200487.us-central1.run.app',
+  analytics: process.env.REACT_APP_ANALYTICS_API || 'https://analytics-service-586011919703.us-central1.run.app'
 };
 
 console.log('🌐 APIs Configuradas:', API_URLS);
