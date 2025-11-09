@@ -1,5 +1,30 @@
 import { useState, useEffect, useRef } from 'react';
-import api from '../services/api.js';
+import axios from 'axios';
+
+// Configurar URL del Catalog Service
+const CATALOG_API = process.env.REACT_APP_CATALOG_API || 'http://localhost:3001';
+
+// Crear instancia de axios para Catalog Service
+const catalogAPI = axios.create({
+  baseURL: `${CATALOG_API}/api`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Interceptor para agregar token
+catalogAPI.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 export const useSongStream = (songId) => {
   const [url, setUrl] = useState(null);
@@ -19,7 +44,7 @@ export const useSongStream = (songId) => {
         setError(null);
 
         // Llamar al backend para obtener URL firmada
-        const response = await api.get(`/songs/${songId}/stream-url`);
+        const response = await catalogAPI.get(`/songs/${songId}/stream-url`);
         const { url: newUrl, expiresIn } = response.data;
 
         setUrl(newUrl);
