@@ -1,199 +1,224 @@
 // src/services/api.js
+// src/services/api.js
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3002/api';
+// ============================================
+// 🔥 Configuración de URLs según el entorno
+// ============================================
+const API_URLS = {
+  user: process.env.REACT_APP_USER_API || 'http://localhost:3002',
+  catalog: process.env.REACT_APP_CATALOG_API || 'http://localhost:3001',
+  analytics: process.env.REACT_APP_ANALYTICS_API || 'http://localhost:3003'
+};
 
+console.log('🌐 APIs Configuradas:', API_URLS);
 
-// Crear instancia de axios
-const api = axios.create({
-  baseURL: API_BASE_URL,
+// Crear instancia de axios para User Service
+const userAPI = axios.create({
+  baseURL: `${API_URLS.user}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Interceptor para agregar el token a todas las peticiones
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+// Crear instancia de axios para Catalog Service
+const catalogAPI = axios.create({
+  baseURL: `${API_URLS.catalog}/api`,
+  headers: {
+    'Content-Type': 'application/json',
   },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+});
+
+// Crear instancia de axios para Analytics Service
+const analyticsAPI = axios.create({
+  baseURL: `${API_URLS.analytics}/api`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 // ============================================
-// SONGS API
+// Interceptor para agregar token a TODAS las peticiones
+// ============================================
+[userAPI, catalogAPI, analyticsAPI].forEach(api => {
+  api.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+});
+
+// ============================================
+// SONGS API (usa Catalog Service)
 // ============================================
 export const songsAPI = {
-  // Obtener todas las canciones
   getAll: async (params = {}) => {
-    const response = await api.get('/songs', { params });
+    const response = await catalogAPI.get('/songs', { params });
     return response.data;
   },
 
-  // Obtener canción por ID
   getById: async (id) => {
-    const response = await api.get(`/songs/${id}`);
+    const response = await catalogAPI.get(`/songs/${id}`);
     return response.data;
   },
 
-  // Buscar canciones
   search: async (query) => {
-    const response = await api.get('/songs/search', { params: { q: query } });
+    const response = await catalogAPI.get('/songs/search', { params: { q: query } });
     return response.data;
   },
 
-  // Crear canción (admin)
   create: async (songData) => {
-    const response = await api.post('/songs', songData);
+    const response = await catalogAPI.post('/songs', songData);
     return response.data;
   },
 
-  // Actualizar canción (admin)
   update: async (id, songData) => {
-    const response = await api.put(`/songs/${id}`, songData);
+    const response = await catalogAPI.put(`/songs/${id}`, songData);
     return response.data;
   },
 
-  // Eliminar canción (admin)
   delete: async (id) => {
-    const response = await api.delete(`/songs/${id}`);
+    const response = await catalogAPI.delete(`/songs/${id}`);
     return response.data;
   },
 };
 
 // ============================================
-// USERS API
+// USERS API (usa User Service)
 // ============================================
 export const usersAPI = {
-  // Registro
   register: async (userData) => {
-    const response = await api.post('/auth/register', userData);
+    const response = await userAPI.post('/auth/register', userData);
     return response.data;
   },
 
-  // Login
   login: async (credentials) => {
-    const response = await api.post('/auth/login', credentials);
+    const response = await userAPI.post('/auth/login', credentials);
     return response.data;
   },
 
-  // Obtener perfil
   getProfile: async () => {
-    const response = await api.get('/users/profile');
+    const response = await userAPI.get('/users/profile');
     return response.data;
   },
 
-  // Actualizar perfil
   updateProfile: async (userData) => {
-    const response = await api.put('/users/profile', userData);
+    const response = await userAPI.put('/users/profile', userData);
     return response.data;
   },
 
-  // Agregar a favoritos
   addFavorite: async (songId) => {
-    const response = await api.post('/users/favorites', { song_id: songId });
+    const response = await userAPI.post('/users/favorites', { song_id: songId });
     return response.data;
   },
 
-  // Obtener favoritos
   getFavorites: async () => {
-    const response = await api.get('/users/favorites');
+    const response = await userAPI.get('/users/favorites');
     return response.data;
   },
 
-  // Eliminar de favoritos
   removeFavorite: async (songId) => {
-    const response = await api.delete(`/users/favorites/${songId}`);
+    const response = await userAPI.delete(`/users/favorites/${songId}`);
     return response.data;
   },
 
-  // Registrar reproducción
   recordPlay: async (playData) => {
-    const response = await api.post('/users/play', playData);
+    const response = await userAPI.post('/users/play', playData);
     return response.data;
   },
 
-  // Obtener historial
   getHistory: async (params = {}) => {
-    const response = await api.get('/users/history', { params });
+    const response = await userAPI.get('/users/history', { params });
     return response.data;
   },
 };
 
 // ============================================
-// PLAYLISTS API
+// PLAYLISTS API (usa User Service)
 // ============================================
 export const playlistsAPI = {
-  // Obtener todas las playlists del usuario
   getAll: async () => {
-    const response = await api.get('/playlists');
+    const response = await userAPI.get('/playlists');
     return response.data;
   },
 
-  // Crear playlist
   create: async (playlistData) => {
-    const response = await api.post('/playlists', playlistData);
+    const response = await userAPI.post('/playlists', playlistData);
     return response.data;
   },
 
-  // Obtener canciones de una playlist
   getSongs: async (playlistId) => {
-    const response = await api.get(`/playlists/${playlistId}`);
+    const response = await userAPI.get(`/playlists/${playlistId}`);
     return response.data;
   },
 
-  // Agregar canción a playlist
   addSong: async (playlistId, songId) => {
-    const response = await api.post(`/playlists/${playlistId}/songs`, { song_id: songId });
+    const response = await userAPI.post(`/playlists/${playlistId}/songs`, { song_id: songId });
     return response.data;
   },
 
-  // Eliminar canción de playlist
   removeSong: async (playlistId, songId) => {
-    const response = await api.delete(`/playlists/${playlistId}/songs/${songId}`);
+    const response = await userAPI.delete(`/playlists/${playlistId}/songs/${songId}`);
     return response.data;
   },
 
-  // Eliminar playlist
   delete: async (playlistId) => {
-    const response = await api.delete(`/playlists/${playlistId}`);
+    const response = await userAPI.delete(`/playlists/${playlistId}`);
     return response.data;
   },
 };
 
 // ============================================
-// SEARCH API
+// SEARCH API (usa Catalog Service)
 // ============================================
 export const searchAPI = {
-  // Búsqueda general (todas las entidades)
   searchAll: async (query) => {
-    const response = await api.get('/search', { params: { q: query } });
+    const response = await catalogAPI.get('/search', { params: { q: query } });
     return response.data;
   },
 
-  // Buscar solo canciones
   searchSongs: async (query) => {
-    const response = await api.get('/search/songs', { params: { q: query } });
+    const response = await catalogAPI.get('/search/songs', { params: { q: query } });
     return response.data;
   },
 
-  // Buscar solo artistas
   searchArtists: async (query) => {
-    const response = await api.get('/search/artists', { params: { q: query } });
+    const response = await catalogAPI.get('/search/artists', { params: { q: query } });
     return response.data;
   },
 
-  // Buscar solo álbumes
   searchAlbums: async (query) => {
-    const response = await api.get('/search/albums', { params: { q: query } });
+    const response = await catalogAPI.get('/search/albums', { params: { q: query } });
     return response.data;
   },
 };
 
-export default api;
+// ============================================
+// ANALYTICS API (usa Analytics Service)
+// ============================================
+export const analyticsAPI = {
+  trackPlay: async (data) => {
+    const response = await analyticsAPI.post('/plays', data);
+    return response.data;
+  },
+
+  getTrending: async () => {
+    const response = await analyticsAPI.get('/trending');
+    return response.data;
+  },
+
+  getUserHistory: async (userId) => {
+    const response = await analyticsAPI.get(`/users/${userId}/history`);
+    return response.data;
+  },
+};
+
+// Exportar instancia por defecto (para uso directo)
+export default userAPI;

@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlayerProvider } from './contexts/PlayerContext.jsx';
 
+
 // ============================================
 // 🔥 LAZY LOADING - Code Splitting Implementado
 // ============================================

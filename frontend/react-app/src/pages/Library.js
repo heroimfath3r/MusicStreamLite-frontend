@@ -174,7 +174,7 @@ const Library = () => {
               }}
             >
               <img 
-                src={song.cover_image_url || 'https://via.placeholder.com/200'} 
+                src={song.cover_image_url || 'https://storage.googleapis.com/music-stream-lite-bucket/collage%20jahseh.jpeg'} 
                 alt="" 
               />
             </motion.div>
