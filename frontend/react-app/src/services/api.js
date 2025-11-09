@@ -1,5 +1,4 @@
 // src/services/api.js
-// src/services/api.js
 import axios from 'axios';
 
 // ============================================
@@ -30,7 +29,7 @@ const catalogAPI = axios.create({
 });
 
 // Crear instancia de axios para Analytics Service
-const analyticsAPI = axios.create({
+const analyticsAxios = axios.create({
   baseURL: `${API_URLS.analytics}/api`,
   headers: {
     'Content-Type': 'application/json',
@@ -40,7 +39,7 @@ const analyticsAPI = axios.create({
 // ============================================
 // Interceptor para agregar token a TODAS las peticiones
 // ============================================
-[userAPI, catalogAPI, analyticsAPI].forEach(api => {
+[userAPI, catalogAPI, analyticsAxios].forEach(api => {
   api.interceptors.request.use(
     (config) => {
       const token = localStorage.getItem('token');
@@ -205,17 +204,17 @@ export const searchAPI = {
 // ============================================
 export const analyticsAPI = {
   trackPlay: async (data) => {
-    const response = await analyticsAPI.post('/plays', data);
+    const response = await analyticsAxios.post('/plays', data);
     return response.data;
   },
 
   getTrending: async () => {
-    const response = await analyticsAPI.get('/trending');
+    const response = await analyticsAxios.get('/trending');
     return response.data;
   },
 
   getUserHistory: async (userId) => {
-    const response = await analyticsAPI.get(`/users/${userId}/history`);
+    const response = await analyticsAxios.get(`/users/${userId}/history`);
     return response.data;
   },
 };
