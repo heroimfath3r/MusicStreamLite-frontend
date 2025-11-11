@@ -1,22 +1,87 @@
-# C:\Proyectos\MusicStreamLite\docker\docker-compose.prod.yml
 version: '3.8'
 
 services:
   # ==========================================================================
-  # REVERSE PROXY / LOAD BALANCER (TRAEFIK)
+  # FRONTEND APPLICATION
+  # ==========================================================================
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.prod
+    container_name: musicstream-frontend-prod
+    environment:
+      - API_URL=${API_URL:-https://api.musicstream.example.com}
+      - NODE_ENV=production
+      - REACT_APP_VERSION=${APP_VERSION:-1.0.0}
+      - REACT_APP_SENTRY_DSN=${SENTRY_DSN}
+      - REACT_APP_GA_TRACKING_ID=${GA_TRACKING_ID}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN:-musicstream.example.com}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.routers.frontend.tls.domains[0].main=${DOMAIN:-musicstream.example.com}"
+      - "traefik.http.routers.frontend.tls.domains[0].sans=www.${DOMAIN:-musicstream.example.com}"
+      - "traefik.http.services.frontend.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.frontend-compress.compress=true"
+      - "traefik.http.routers.frontend.middlewares=frontend-compress"
+      # Security headers
+      - "traefik.http.middlewares.frontend-security.headers.sslredirect=true"
+      - "traefik.http.middlewares.frontend-security.headers.stsseconds=31536000"
+      - "traefik.http.middlewares.frontend-security.headers.stsincludesubdomains=true"
+      - "traefik.http.middlewares.frontend-security.headers.stspreload=true"
+      - "traefik.http.middlewares.frontend-security.headers.forcestsheader=true"
+      - "traefik.http.middlewares.frontend-security.headers.customresponseheaders.X-Content-Type-Options:nosniff"
+      - "traefik.http.middlewares.frontend-security.headers.customresponseheaders.X-Frame-Options:DENY"
+      - "traefik.http.middlewares.frontend-security.headers.customresponseheaders.X-XSS-Protection:1; mode=block"
+      - "traefik.http.middlewares.frontend-security.headers.customresponseheaders.Referrer-Policy:strict-origin-when-cross-origin"
+      - "traefik.http.routers.frontend.middlewares=frontend-security"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - frontend-prod-network
+    restart: unless-stopped
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+        order: stop-first
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+      placement:
+        constraints:
+          - node.role == worker
+
+  # ==========================================================================
+  # REVERSE PROXY (TRAEFIK)
   # ==========================================================================
   traefik:
     image: traefik:v2.10
-    container_name: musicstream-traefik
+    container_name: musicstream-frontend-traefik
     command:
       - --api.dashboard=true
       - --api.insecure=true
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=frontend-prod-network
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
       - --certificatesresolvers.myresolver.acme.tlschallenge=true
-      - --certificatesresolvers.myresolver.acme.email=admin@musicstream.com
+      - --certificatesresolvers.myresolver.acme.email=${ACME_EMAIL:-admin@musicstream.com}
       - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
     ports:
       - "80:80"
@@ -27,311 +92,59 @@ services:
       - traefik_letsencrypt:/letsencrypt
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml
     networks:
-      - musicstream-prod-network
-    restart: unless-stopped
-
-  # ==========================================================================
-  # DATABASE (PostgreSQL con replicación para producción)
-  # ==========================================================================
-  postgres:
-    image: postgres:15-alpine
-    container_name: musicstream-postgres-prod
-    environment:
-      POSTGRES_DB: ${DB_NAME:-musicstream}
-      POSTGRES_USER: ${DB_USER:-admin}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
-      PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data_prod:/var/lib/postgresql/data
-      - ./init/init-prod.sql:/docker-entrypoint-initdb.d/init-prod.sql
-      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
-    command: >
-      postgres -c config_file=/etc/postgresql/postgresql.conf
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-admin} -d ${DB_NAME:-musicstream}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    networks:
-      - musicstream-prod-network
+      - frontend-prod-network
     restart: unless-stopped
     deploy:
-      resources:
-        limits:
-          memory: 2G
-          cpus: '1.0'
-        reservations:
-          memory: 1G
-          cpus: '0.5'
+      placement:
+        constraints:
+          - node.role == manager
 
   # ==========================================================================
-  # BACKEND SERVICES
+  # MONITORING (Frontend-specific)
   # ==========================================================================
-  catalog-service:
-    build:
-      context: ../backend/catalog-service
-      dockerfile: Dockerfile.prod
-    container_name: musicstream-catalog-prod
-    environment:
-      - NODE_ENV=production
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=${DB_NAME:-musicstream}
-      - DB_USER=${DB_USER:-admin}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - PORT=3001
-      - LOG_LEVEL=info
-      - CORS_ORIGIN=${CORS_ORIGIN:-https://musicstream.example.com}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.catalog.rule=Host(`api.musicstream.example.com`) && PathPrefix(`/api/catalog`)"
-      - "traefik.http.routers.catalog.entrypoints=websecure"
-      - "traefik.http.routers.catalog.tls.certresolver=myresolver"
-      - "traefik.http.services.catalog.loadbalancer.server.port=3001"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "node", "health-check.js"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - musicstream-prod-network
-    restart: unless-stopped
-    deploy:
-      replicas: 2
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.5'
-        reservations:
-          memory: 256M
-          cpus: '0.25'
-      update_config:
-        parallelism: 1
-        delay: 10s
-        order: start-first
-
-  user-service:
-    build:
-      context: ../backend/user-service
-      dockerfile: Dockerfile.prod
-    container_name: musicstream-user-prod
-    environment:
-      - NODE_ENV=production
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=${DB_NAME:-musicstream}
-      - DB_USER=${DB_USER:-admin}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRES_IN=24h
-      - PORT=3002
-      - LOG_LEVEL=info
-      - CORS_ORIGIN=${CORS_ORIGIN:-https://musicstream.example.com}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.user.rule=Host(`api.musicstream.example.com`) && PathPrefix(`/api/users`, `/api/auth`)"
-      - "traefik.http.routers.user.entrypoints=websecure"
-      - "traefik.http.routers.user.tls.certresolver=myresolver"
-      - "traefik.http.services.user.loadbalancer.server.port=3002"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "node", "health-check.js"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - musicstream-prod-network
-    restart: unless-stopped
-    deploy:
-      replicas: 2
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.5'
-        reservations:
-          memory: 256M
-          cpus: '0.25'
-
-  analytics-service:
-    build:
-      context: ../backend/analytics-service
-      dockerfile: Dockerfile.prod
-    container_name: musicstream-analytics-prod
-    environment:
-      - NODE_ENV=production
-      - PORT=3003
-      - LOG_LEVEL=info
-      - GOOGLE_APPLICATION_CREDENTIALS=/app/service-account.json
-      - FIRESTORE_PROJECT_ID=${FIRESTORE_PROJECT_ID}
-      - CORS_ORIGIN=${CORS_ORIGIN:-https://musicstream.example.com}
-    volumes:
-      - ./secrets/service-account.json:/app/service-account.json:ro
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.analytics.rule=Host(`api.musicstream.example.com`) && PathPrefix(`/api/analytics`)"
-      - "traefik.http.routers.analytics.entrypoints=websecure"
-      - "traefik.http.routers.analytics.tls.certresolver=myresolver"
-      - "traefik.http.services.analytics.loadbalancer.server.port=3003"
-    healthcheck:
-      test: ["CMD", "node", "health-check.js"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - musicstream-prod-network
-    restart: unless-stopped
-    deploy:
-      replicas: 2
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.5'
-        reservations:
-          memory: 256M
-          cpus: '0.25'
-
-  # ==========================================================================
-  # FRONTEND
-  # ==========================================================================
-  frontend:
-    build:
-      context: ../frontend/react-app
-      dockerfile: Dockerfile.prod
-    container_name: musicstream-frontend-prod
-    environment:
-      - REACT_APP_API_URL=https://api.musicstream.example.com
-      - REACT_APP_ENV=production
-      - REACT_APP_VERSION=${APP_VERSION:-1.0.0}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`musicstream.example.com`)"
-      - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
-      - "traefik.http.services.frontend.loadbalancer.server.port=80"
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - musicstream-prod-network
-    restart: unless-stopped
-    deploy:
-      replicas: 3
-      resources:
-        limits:
-          memory: 256M
-          cpus: '0.25'
-        reservations:
-          memory: 128M
-          cpus: '0.1'
-
-  # ==========================================================================
-  # REDIS (Para cache y sesiones)
-  # ==========================================================================
-  redis:
-    image: redis:7-alpine
-    container_name: musicstream-redis-prod
-    command: >
-      redis-server 
-      --appendonly yes 
-      --requirepass ${REDIS_PASSWORD:-redis_password}
-      --maxmemory 512mb
-      --maxmemory-policy allkeys-lru
-    volumes:
-      - redis_data_prod:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "--pass", "${REDIS_PASSWORD:-redis_password}", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-    networks:
-      - musicstream-prod-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.5'
-        reservations:
-          memory: 256M
-          cpus: '0.25'
-
-  # ==========================================================================
-  # MONITORING (Prometheus + Grafana)
-  # ==========================================================================
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: musicstream-prometheus
+  frontend-monitor:
+    image: nginx/nginx-prometheus-exporter:0.11.0
+    container_name: musicstream-frontend-monitor
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=200h'
-      - '--web.enable-lifecycle'
+      - '-nginx.scrape-uri'
+      - 'http://frontend:8080/nginx_status'
     ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
+      - "9113:9113"
     networks:
-      - musicstream-prod-network
+      - frontend-prod-network
     restart: unless-stopped
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: musicstream-grafana
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
-      - GF_USERS_ALLOW_SIGN_UP=false
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
     depends_on:
-      - prometheus
+      - frontend
+
+  # ==========================================================================
+  # LOG COLLECTOR (Optional)
+  # ==========================================================================
+  fluent-bit:
+    image: fluent/fluent-bit:2.1.9
+    container_name: musicstream-frontend-fluentbit
+    volumes:
+      - ./fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf
     networks:
-      - musicstream-prod-network
+      - frontend-prod-network
     restart: unless-stopped
+    deploy:
+      mode: global
 
 # ============================================================================
 # VOLUMES
 # ============================================================================
 volumes:
-  postgres_data_prod:
-    driver: local
-  redis_data_prod:
-    driver: local
   traefik_letsencrypt:
-    driver: local
-  prometheus_data:
-    driver: local
-  grafana_data:
     driver: local
 
 # ============================================================================
 # NETWORKS
 # ============================================================================
 networks:
-  musicstream-prod-network:
+  frontend-prod-network:
     driver: bridge
-    name: musicstream-prod-network
+    name: musicstream-frontend-prod-network
     ipam:
       config:
-        - subnet: 172.20.0.0/16
+        - subnet: 172.22.0.0/16

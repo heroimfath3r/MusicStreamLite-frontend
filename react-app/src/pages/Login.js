@@ -1,8 +1,6 @@
-// ============================================
 // frontend/react-app/src/pages/Login.js
-// Enhanced with animations and blue theme
-// ============================================
 import React, { useState, useEffect } from 'react';
+import { usersAPI } from '../services/api.js';  // ⭐ IMPORTAR API
 import './Login.css';
 
 const Login = () => {
@@ -72,25 +70,11 @@ const Login = () => {
         password: '***'
       });
 
-      const response = await fetch('http://localhost:3002/api/auth/login', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        })
+      // ⭐ USAR usersAPI en lugar de fetch
+      const data = await usersAPI.login({
+        email: formData.email,
+        password: formData.password
       });
-
-      console.log('📥 Response status:', response.status);
-
-      const data = await response.json();
-      console.log('📥 Response data:', data);
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al iniciar sesión');
-      }
 
       console.log('✅ Login exitoso:', data);
       
@@ -114,11 +98,11 @@ const Login = () => {
       
       let errorMessage = 'Error al iniciar sesión. ';
       
-      if (error.message === 'Failed to fetch') {
-        errorMessage += 'No se puede conectar al servidor. Verifica que el backend esté corriendo.';
-      } else if (error.message.includes('Invalid email or password')) {
-        errorMessage = 'Email o contraseña incorrectos';
-      } else {
+      if (error.message === 'Network Error') {
+        errorMessage += 'No se puede conectar al servidor. Verifica tu conexión.';
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
         errorMessage += error.message;
       }
       

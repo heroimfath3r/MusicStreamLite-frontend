@@ -1,3 +1,4 @@
+// frontend/react-app/src/pages/Search.js
 import React, { useState, useMemo, useEffect } from 'react';
 import { searchAPI } from '../services/api.js';
 import './Search.css';
