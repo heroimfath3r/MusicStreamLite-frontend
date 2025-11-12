@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useSongStream } from '../hooks/useSongStream.js';
 import { usePlayer } from '../contexts/PlayerContext.jsx';
 import { motion } from 'framer-motion';
+import analyticsService from '../services/analyticsservice.js';
 import { 
   FaPlay, 
   FaPause, 
@@ -38,12 +39,14 @@ const MusicPlayer = () => {
   const [repeatMode, setRepeatMode] = useState(0);
 
   const { url: streamUrl, loading: urlLoading } = useSongStream(currentSong?.song_id);
+   const playEventTrackedRef = useRef(false); // 📊 ANALYTICS
 
   // ============================================
   // ✅ FIX: Cargar y reproducir cuando streamUrl esté listo
   // ============================================
   useEffect(() => {
     // Validar que tenemos todo lo necesario
+     playEventTrackedRef.current = false; // ✅ AGREGAR ESTA LÍNEA - 📊 ANALYTICS
     if (!streamUrl || urlLoading || !audioRef.current || !currentSong) {
       return;
     }
@@ -201,9 +204,23 @@ const MusicPlayer = () => {
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleSongEnd}
         onPlay={() => {
-          console.log('🎵 Audio onPlay event');
-          setIsPlaying(true);
-        }}
+  console.log('🎵 Audio onPlay event');
+  setIsPlaying(true);
+  
+  // 📊 ANALYTICS: Registrar reproducción
+  if (!playEventTrackedRef.current && currentSong?.song_id) {
+    playEventTrackedRef.current = true;
+    
+    // Obtén userId de tu contexto o estado (ajusta según tu app)
+    const userId = currentSong.user_id || 'anonymous';
+    
+    analyticsService.trackPlay(
+      userId,
+      currentSong.song_id,
+      Math.round(duration)
+    );
+  }
+}}
         onPause={() => {
           console.log('⏸️ Audio onPause event');
           setIsPlaying(false);
