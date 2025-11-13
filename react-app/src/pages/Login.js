@@ -1,10 +1,7 @@
-// ============================================
 // frontend/react-app/src/pages/Login.js
-// Enhanced with animations and blue theme
-// ============================================
 import React, { useState, useEffect } from 'react';
+import { usersAPI } from '../services/api.js';  // ⭐ IMPORTAR API
 import './Login.css';
-import { usersAPI } from '../services/api.js';  // ⭐ AGREGAR ESTO
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -49,71 +46,71 @@ const Login = () => {
     setErrors(prev => ({ ...prev, [name]: error }));
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  // Validar todos los campos
-  const newErrors = {};
-  Object.keys(formData).forEach(key => {
-    const error = validateField(key, formData[key]);
-    if (error) newErrors[key] = error;
-  });
-
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    return;
-  }
-
-  setLoading(true);
-  setMessage(null);
-
-  try {
-    console.log('📤 Enviando login:', {
-      email: formData.email,
-      password: '***'
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validar todos los campos
+    const newErrors = {};
+    Object.keys(formData).forEach(key => {
+      const error = validateField(key, formData[key]);
+      if (error) newErrors[key] = error;
     });
 
-    // ⭐ USAR usersAPI en lugar de fetch directo
-    const data = await usersAPI.login({
-      email: formData.email,
-      password: formData.password
-    });
-
-    console.log('✅ Login exitoso:', data);
-    
-    // Guardar token y datos del usuario
-    if (data.token) {
-      localStorage.setItem('token', data.token);
-    }
-    if (data.user) {
-      localStorage.setItem('user', JSON.stringify(data.user));
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
     }
 
-    setMessage({ type: 'success', text: '¡Bienvenido de vuelta! 🎉' });
-    
-    // Redirigir después de 1.5 segundos
-    setTimeout(() => {
-      window.location.href = '/home';
-    }, 1500);
+    setLoading(true);
+    setMessage(null);
 
-  } catch (error) {
-    console.error('❌ Error completo:', error);
-    
-    let errorMessage = 'Error al iniciar sesión. ';
-    
-    if (error.message === 'Network Error') {
-      errorMessage += 'No se puede conectar al servidor. Verifica que el backend esté corriendo.';
-    } else if (error.response?.data?.error) {
-      errorMessage = error.response.data.error;
-    } else {
-      errorMessage += error.message;
+    try {
+      console.log('📤 Enviando login:', {
+        email: formData.email,
+        password: '***'
+      });
+
+      // ⭐ USAR usersAPI en lugar de fetch
+      const data = await usersAPI.login({
+        email: formData.email,
+        password: formData.password
+      });
+
+      console.log('✅ Login exitoso:', data);
+      
+      // Guardar token y datos del usuario
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+
+      setMessage({ type: 'success', text: '¡Bienvenido de vuelta! 🎉' });
+      
+      // Redirigir después de 1.5 segundos
+      setTimeout(() => {
+        window.location.href = '/home';
+      }, 1500);
+
+    } catch (error) {
+      console.error('❌ Error completo:', error);
+      
+      let errorMessage = 'Error al iniciar sesión. ';
+      
+      if (error.message === 'Network Error') {
+        errorMessage += 'No se puede conectar al servidor. Verifica tu conexión.';
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage += error.message;
+      }
+      
+      setMessage({ type: 'error', text: errorMessage });
+    } finally {
+      setLoading(false);
     }
-    
-    setMessage({ type: 'error', text: errorMessage });
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div className="login-container">

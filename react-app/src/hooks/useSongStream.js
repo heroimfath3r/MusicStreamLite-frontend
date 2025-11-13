@@ -1,5 +1,6 @@
+// frontend/react-app/src/hooks/useSongStream.js
 import { useState, useEffect, useRef } from 'react';
-import api from '../services/api.js';
+import api from '../services/api.js';  // ⭐ Importar instancia centralizada
 
 export const useSongStream = (songId) => {
   const [url, setUrl] = useState(null);
@@ -18,10 +19,14 @@ export const useSongStream = (songId) => {
         setLoading(true);
         setError(null);
 
-        // Llamar al backend para obtener URL firmada
+        console.log('🎵 Obteniendo URL de stream para canción:', songId);
+
+        // ⭐ Usar instancia centralizada de api.js
+        // Esta instancia ya tiene el token automáticamente
         const response = await api.get(`/songs/${songId}/stream-url`);
         const { url: newUrl, expiresIn } = response.data;
 
+        console.log('✅ URL de stream obtenida');
         setUrl(newUrl);
 
         // Programar renovación 1 hora antes de que expire
@@ -36,12 +41,12 @@ export const useSongStream = (songId) => {
 
         // Programar nueva renovación
         renewTimeoutRef.current = setTimeout(() => {
-          console.log('Renovando URL de canción...');
+          console.log('🔄 Renovando URL de canción...');
           fetchStreamUrl(); // Recursivo: se llamará a sí mismo
         }, renewTime);
 
       } catch (err) {
-        console.error('Error obteniendo URL de stream:', err);
+        console.error('❌ Error obteniendo URL de stream:', err);
         setError(err.response?.data?.error || 'Error al cargar la canción');
         setUrl(null);
       } finally {

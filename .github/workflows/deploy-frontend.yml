@@ -1,0 +1,79 @@
+name: 🚀 Deploy Frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/react-app/**'
+      - '.github/workflows/deploy-frontend.yml'
+
+env:
+  PROJECT_ID: musicstreamlite
+  SERVICE_NAME: frontend
+  REGION: us-central1
+  IMAGE: us-central1-docker.pkg.dev/musicstreamlite/musicstreamlite/frontend
+
+jobs:
+  deploy:
+    name: 🚀 Build and Deploy Frontend
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔐 Auth to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: ☁️ Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: 🔧 Configure Docker
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
+      - name: 🏗️ Build Docker Image
+        working-directory: ./frontend/react-app
+        run: |
+          docker build \
+            --build-arg REACT_APP_USER_API=https://user-service-586011919703.us-central1.run.app \
+            --build-arg REACT_APP_CATALOG_API=https://catalog-service-418253200487.us-central1.run.app \
+            --build-arg REACT_APP_ANALYTICS_API=https://analytics-service-586011919703.us-central1.run.app \
+            -t ${{ env.IMAGE }}:${{ github.sha }} \
+            -t ${{ env.IMAGE }}:latest .
+
+      - name: 📤 Push to Artifact Registry
+        run: |
+          docker push ${{ env.IMAGE }}:${{ github.sha }}
+          docker push ${{ env.IMAGE }}:latest
+
+      - name: 🚀 Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image=${{ env.IMAGE }}:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --platform=managed \
+            --allow-unauthenticated \
+            --memory=512Mi \
+            --timeout=300 \
+            --port=80 \
+            --set-env-vars="REACT_APP_USER_API=https://user-service-586011919703.us-central1.run.app,REACT_APP_CATALOG_API=https://catalog-service-418253200487.us-central1.run.app,REACT_APP_ANALYTICS_API=https://analytics-service-586011919703.us-central1.run.app"
+
+      - name: 📝 Get Service URL
+        id: get-url
+        run: |
+          SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
+            --region=${{ env.REGION }} \
+            --format='value(status.url)')
+          echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
+          echo "✅ Frontend desplegado en: $SERVICE_URL"
+
+      - name: 🏥 Health Check
+        run: |
+          sleep 15
+          curl -f ${{ steps.get-url.outputs.url }}/health || echo "Warning: Health check failed"
