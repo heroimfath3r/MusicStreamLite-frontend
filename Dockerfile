@@ -23,7 +23,7 @@ COPY package*.json ./
 
 # Instalar dependencias exactamente como se especifican
 # npm ci es preferible a npm install en CI/CD
-RUN npm ci --only=production --audit=false --prefer-offline
+RUN npm install --omit=dev --audit=false --prefer-offline
 
 # Copiar código fuente
 COPY . .
