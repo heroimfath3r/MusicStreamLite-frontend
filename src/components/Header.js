@@ -25,16 +25,12 @@ const Header = () => {
   ];
 
   const handleLogout = () => {
-    // Limpiar localStorage/sessionStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     sessionStorage.clear();
-
-    // Redirigir a login
     navigate('/login');
   };
 
-  // Animaciones
   const containerVariants = {
     hidden: { opacity: 0, y: -20 },
     visible: {
@@ -68,17 +64,27 @@ const Header = () => {
       animate="visible"
     >
       <div className="header-left">
-        {/* Logo */}
-       <motion.div 
-  className="logo"
-  whileHover={{ scale: 1.05 }}
-  whileTap={{ scale: 0.95 }}
->
-  <Link to="/home" className="logo-link">
-    <FaMusic className="logo-icon" size={28} />
-    <span className="logo-text">MusicStream</span>
-  </Link>
-</motion.div>
+        {/* Logo - CORREGIDO */}
+        <motion.div 
+          className="logo"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Link 
+            to="/home" 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '10px', 
+              textDecoration: 'none',
+              color: 'inherit'
+            }}
+          >
+            <FaMusic className="logo-icon" size={28} />
+            <span className="logo-text">MusicStream</span>
+          </Link>
+        </motion.div>
+
         {/* Navigation */}
         <motion.nav 
           className="nav-links"
