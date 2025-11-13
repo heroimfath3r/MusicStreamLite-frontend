@@ -57,7 +57,7 @@ RUN addgroup -g 101 -S nginx 2>/dev/null || true && adduser -S -D -H -u 101 -h /
 
 # Copiar configuración nginx personalizada
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY nginx-default.conf /etc/nginx/conf.d/default.conf
+# COPY nginx-default.conf /etc/nginx/conf.d/default.conf
 
 # Copiar build de React desde el stage builder
 COPY --from=builder --chown=nginx:nginx /app/build /usr/share/nginx/html
