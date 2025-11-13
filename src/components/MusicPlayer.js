@@ -1,5 +1,5 @@
 // frontend/react-app/src/components/MusicPlayer.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSongStream } from '../hooks/useSongStream.js';
 import { usePlayer } from '../contexts/PlayerContext.jsx';
 import { motion } from 'framer-motion';
@@ -39,6 +39,7 @@ const MusicPlayer = () => {
   const [repeatMode, setRepeatMode] = useState(0);
 
   const { url: streamUrl, loading: urlLoading } = useSongStream(currentSong?.song_id);
+  const { useRef } = require('react');
    const playEventTrackedRef = useRef(false); // 📊 ANALYTICS
 
   // ============================================
