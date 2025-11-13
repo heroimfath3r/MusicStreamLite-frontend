@@ -39,7 +39,7 @@ const MusicPlayer = () => {
   const [repeatMode, setRepeatMode] = useState(0);
 
   const { url: streamUrl, loading: urlLoading } = useSongStream(currentSong?.song_id);
-  const { useRef } = require('react');
+  const { useRef } = import('react');
    const playEventTrackedRef = useRef(false); // 📊 ANALYTICS
 
   // ============================================
