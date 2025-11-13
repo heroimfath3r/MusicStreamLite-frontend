@@ -1,4 +1,4 @@
-// frontend/react-app/src/components/MusicPlayer.js
+// src/components/MusicPlayer.js
 import React, { useState, useEffect, useRef } from 'react';
 import { useSongStream } from '../hooks/useSongStream.js';
 import { usePlayer } from '../contexts/PlayerContext.jsx';
@@ -39,15 +39,13 @@ const MusicPlayer = () => {
   const [repeatMode, setRepeatMode] = useState(0);
 
   const { url: streamUrl, loading: urlLoading } = useSongStream(currentSong?.song_id);
-  const { useRef } = import('react');
-   const playEventTrackedRef = useRef(false); // 📊 ANALYTICS
+  const playEventTrackedRef = useRef(false); // 📊 ANALYTICS
 
   // ============================================
-  // ✅ FIX: Cargar y reproducir cuando streamUrl esté listo
+  // ✅ Cargar y reproducir cuando streamUrl esté listo
   // ============================================
   useEffect(() => {
     // Validar que tenemos todo lo necesario
-     playEventTrackedRef.current = false; // ✅ AGREGAR ESTA LÍNEA - 📊 ANALYTICS
     if (!streamUrl || urlLoading || !audioRef.current || !currentSong) {
       return;
     }
@@ -67,7 +65,7 @@ const MusicPlayer = () => {
       // Cargar el audio
       audio.load();
       
-      // ✅ IMPORTANTE: Esperar a que el audio esté listo antes de reproducir
+      // ✅ Esperar a que el audio esté listo antes de reproducir
       const handleCanPlay = () => {
         console.log('✅ Audio listo, reproduciendo automáticamente');
         
@@ -99,7 +97,7 @@ const MusicPlayer = () => {
         audio.removeEventListener('canplay', handleCanPlay);
       };
     }
-  }, [streamUrl, urlLoading, currentSong]); // ✅ Solo estas dependencias
+  }, [streamUrl, urlLoading, currentSong, isPlaying]);
 
   // ============================================
   // Sincronizar volumen
@@ -205,23 +203,22 @@ const MusicPlayer = () => {
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleSongEnd}
         onPlay={() => {
-  console.log('🎵 Audio onPlay event');
-  setIsPlaying(true);
-  
-  // 📊 ANALYTICS: Registrar reproducción
-  if (!playEventTrackedRef.current && currentSong?.song_id) {
-    playEventTrackedRef.current = true;
-    
-    // Obtén userId de tu contexto o estado (ajusta según tu app)
-    const userId = currentSong.user_id || 'anonymous';
-    
-    analyticsService.trackPlay(
-      userId,
-      currentSong.song_id,
-      Math.round(duration)
-    );
-  }
-}}
+          console.log('🎵 Audio onPlay event');
+          setIsPlaying(true);
+          
+          // 📊 ANALYTICS: Registrar reproducción
+          if (!playEventTrackedRef.current && currentSong?.song_id) {
+            playEventTrackedRef.current = true;
+            
+            const userId = currentSong.user_id || 'anonymous';
+            
+            analyticsService.trackPlay(
+              userId,
+              currentSong.song_id,
+              Math.round(duration)
+            );
+          }
+        }}
         onPause={() => {
           console.log('⏸️ Audio onPause event');
           setIsPlaying(false);
