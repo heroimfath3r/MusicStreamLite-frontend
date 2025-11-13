@@ -25,6 +25,7 @@ steps:
       - '--allow-unauthenticated'
       - '--memory=512Mi'
       - '--port=3000'
+      - '--cpu-boost'
       - '--startup-cpu-boost'
 
 images:
