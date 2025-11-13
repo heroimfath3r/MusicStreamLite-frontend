@@ -27,3 +27,6 @@ images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/musicstreamlite-frontend/app:$SHORT_SHA'
 
 timeout: '1800s'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
