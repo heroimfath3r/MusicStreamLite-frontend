@@ -24,6 +24,7 @@ steps:
       - '--platform=managed'
       - '--allow-unauthenticated'
       - '--memory=512Mi'
+      - '--port=3000'
 
 images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/musicstreamlite-frontend/app:$SHORT_SHA'
