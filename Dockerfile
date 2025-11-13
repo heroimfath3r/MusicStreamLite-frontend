@@ -52,7 +52,7 @@ ENV NGINX_PORT=3000
 ENV NODE_ENV=production
 
 # Crear usuario no-root para seguridad
-RUN addgroup -g 101 -S nginx && \
+RUN addgroup -g 101 -S nginx 2>/dev/null || true && adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -c "nginx user" nginx 2>/dev/null || true \
     adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -c "nginx user" nginx
 
 # Copiar configuración nginx personalizada
