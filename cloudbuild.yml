@@ -1,7 +1,7 @@
 steps:
   - name: 'node:18'
     entrypoint: npm
-    args: ['ci']
+    args: ['install']
 
   - name: 'node:18'
     entrypoint: npm
@@ -22,7 +22,6 @@ steps:
       - '--platform=managed'
       - '--allow-unauthenticated'
       - '--memory=512Mi'
-
 
 images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/musicstreamlite-frontend/app:$SHORT_SHA'
