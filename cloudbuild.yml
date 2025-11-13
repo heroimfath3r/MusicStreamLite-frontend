@@ -23,6 +23,7 @@ steps:
       - '--allow-unauthenticated'
       - '--memory=512Mi'
 
+
 images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/musicstreamlite-frontend/app:$SHORT_SHA'
 
