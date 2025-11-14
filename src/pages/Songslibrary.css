@@ -1,0 +1,262 @@
+/* src/pages/SongsLibrary.css */
+/* Este archivo es igual a Library.css - cópialo de allí */
+/* O puedes usar directamente Library.css si los importas igual */
+
+.library-container {
+  width: 100%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ========================================
+   HEADER
+======================================== */
+.library-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.library-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.library-count {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+/* ========================================
+   CONTROLES
+======================================== */
+.library-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  flex: 1;
+  min-width: 250px;
+  transition: all 0.3s ease;
+}
+
+.search-bar:focus-within {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(0, 122, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.1);
+}
+
+.search-icon {
+  color: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+}
+
+.search-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  padding: 0;
+}
+
+.search-bar input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.view-controls {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.view-button {
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.view-button:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.view-button.active {
+  color: #007AFF;
+  background: rgba(0, 122, 255, 0.2);
+}
+
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.filter-icon {
+  color: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+}
+
+.sort-select {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.sort-select option {
+  background: #1a1a1a;
+  color: white;
+}
+
+/* ========================================
+   GRID DE CANCIONES
+======================================== */
+.songs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 0;
+}
+
+.songs-grid.list {
+  grid-template-columns: 1fr;
+}
+
+/* ========================================
+   LOADING
+======================================== */
+.library-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 60px 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #007AFF;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ========================================
+   ERROR
+======================================== */
+.library-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 60px 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.retry-button {
+  padding: 10px 24px;
+  background: #007AFF;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+  background: #0051D5;
+  transform: scale(1.05);
+}
+
+/* ========================================
+   NO RESULTS
+======================================== */
+.no-results {
+  grid-column: 1 / -1;
+  padding: 60px 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.no-results p {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+@media (max-width: 768px) {
+  .library-controls {
+    flex-direction: column;
+  }
+
+  .search-bar {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .songs-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .songs-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+
+  .library-title {
+    font-size: 24px;
+  }
+}

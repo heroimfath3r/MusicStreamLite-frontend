@@ -23,7 +23,7 @@ export const useSongStream = (songId) => {
 
         // ⭐ Usar instancia centralizada de api.js
         // Esta instancia ya tiene el token automáticamente
-        const response = await api.get(`/songs/${songId}/stream-url`);
+        const response = await api.get(`/stream/songs/${songId}/stream-url`);
         const { url: newUrl, expiresIn } = response.data;
 
         console.log('✅ URL de stream obtenida');
