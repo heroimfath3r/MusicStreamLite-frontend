@@ -60,7 +60,7 @@ const analyticsAxios = axios.create({
 // ============================================
 export const songsAPI = {
   getAll: async (params = {}) => {
-    const response = await catalogAPI.get('/songs', { params });
+    const response = await catalogAPI.get('/', { params });
     return response.data;
   },
 
