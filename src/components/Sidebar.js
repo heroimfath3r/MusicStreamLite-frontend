@@ -99,19 +99,19 @@ const Sidebar = () => {
         <motion.h3 variants={itemVariants}>Biblioteca</motion.h3>
         <motion.ul className="nav-group" variants={sidebarVariants}>
           <motion.li variants={itemVariants}>
-            <NavLink to="/library/artists" className="sidebar-link">
+            <NavLink to="/search/artists" className="sidebar-link">
               <FaUserCircle size={18} />
               <span>Artistas</span>
             </NavLink>
           </motion.li>
           <motion.li variants={itemVariants}>
-            <NavLink to="/library/albums" className="sidebar-link">
+            <NavLink to="/search/albums" className="sidebar-link">
               <FaCompactDisc size={18} />
               <span>Álbumes</span>
             </NavLink>
           </motion.li>
           <motion.li variants={itemVariants}>
-            <NavLink to="/library/songs" className="sidebar-link">
+            <NavLink to="/search/songs" className="sidebar-link">
               <FaItunesNote size={18} />
               <span>Canciones</span>
             </NavLink>
@@ -130,7 +130,7 @@ const Sidebar = () => {
             </button>
           </motion.li>
           <motion.li variants={itemVariants}>
-            <NavLink to="/playlist/all" className="sidebar-link small-text">
+            <NavLink to="/playlist" className="sidebar-link small-text">
               <FaList size={16} />
               <span>Todas las playlists</span>
             </NavLink>
