@@ -20,7 +20,6 @@ const userAPI = axios.create({
   },
 });
 
-
 // Crear instancia de axios para Catalog Service
 const catalogAPI = axios.create({
   baseURL: `${API_URLS.catalog}/api`,
@@ -59,8 +58,9 @@ const analyticsAxios = axios.create({
 // SONGS API (usa Catalog Service)
 // ============================================
 export const songsAPI = {
+  // ✅ FIXED: Cambiar de '/' a '/songs'
   getAll: async (params = {}) => {
-    const response = await catalogAPI.get('/', { params });
+    const response = await catalogAPI.get('/songs', { params });
     return response.data;
   },
 
@@ -115,27 +115,27 @@ export const usersAPI = {
   },
 
   addFavorite: async (songId) => {
-    const response = await userAPI.post('/users/favorites', { song_id: songId });
+    const response = await userAPI.post('/favorites', { song_id: songId });
     return response.data;
   },
 
   getFavorites: async () => {
-    const response = await userAPI.get('/users/favorites');
+    const response = await userAPI.get('/favorites');
     return response.data;
   },
 
   removeFavorite: async (songId) => {
-    const response = await userAPI.delete(`/users/favorites/${songId}`);
+    const response = await userAPI.delete(`/favorites/${songId}`);
     return response.data;
   },
 
   recordPlay: async (playData) => {
-    const response = await userAPI.post('/users/play', playData);
+    const response = await userAPI.post('/history', playData);
     return response.data;
   },
 
   getHistory: async (params = {}) => {
-    const response = await userAPI.get('/users/history', { params });
+    const response = await userAPI.get('/history', { params });
     return response.data;
   },
 };

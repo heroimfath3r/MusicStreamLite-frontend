@@ -5,16 +5,17 @@ import { FaNewspaper } from 'react-icons/fa';
 import {
   FaHome,
   FaSearch,
-  FaBook, // Usaremos FaBook para "Tu Biblioteca"
+  FaBook,
   FaPlus,
   FaHeart,
-  FaCompactDisc, // Para Álbumes
-  FaUserCircle, // Para Artistas
-  FaItunesNote, // Para Canciones
-  FaList, // Para Playlists
-  FaBroadcastTower, // Para Radio
+  FaCompactDisc,
+  FaUserCircle,
+  FaItunesNote,
+  FaList,
+  FaBroadcastTower,
   FaMusic,
-  FaSpinner // Para loading
+  FaSpinner,
+  FaExclamationTriangle
 } from 'react-icons/fa';
 import { playlistsAPI, songsAPI } from '../services/api.js';
 import './Sidebar.css';
@@ -31,18 +32,52 @@ const Sidebar = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
 
-        // Cargar playlists del usuario
-        const playlistsData = await playlistsAPI.getAll();
-        setPlaylists(playlistsData.playlists || []);
+        console.log('📋 Cargando datos del sidebar...');
+
+        // ✅ FIXED: Mejor manejo de errores y validación
+        try {
+          const playlistsData = await playlistsAPI.getAll();
+          
+          // Validar que la respuesta sea válida
+          if (playlistsData && playlistsData.playlists) {
+            setPlaylists(playlistsData.playlists || []);
+            console.log(`✅ Cargadas ${playlistsData.playlists?.length || 0} playlists`);
+          } else {
+            console.warn('⚠️ Respuesta de playlists inesperada:', playlistsData);
+            setPlaylists([]);
+          }
+        } catch (playlistErr) {
+          console.error('❌ Error cargando playlists:', playlistErr.message);
+          setPlaylists([]);
+          // No detener aquí, continuar con canciones
+        }
 
         // Cargar canciones recientes (últimas 5)
-        const songsData = await songsAPI.getAll({ limit: 5, sort: 'created_at', order: 'DESC' });
-        setRecentSongs(songsData.songs || []);
+        try {
+          const songsData = await songsAPI.getAll({ limit: 5, sort: 'created_at', order: 'DESC' });
+          
+          // Validar respuesta de songs
+          if (songsData && songsData.data) {
+            setRecentSongs(Array.isArray(songsData.data) ? songsData.data : []);
+            console.log(`✅ Cargadas ${Array.isArray(songsData.data) ? songsData.data.length : 0} canciones recientes`);
+          } else if (Array.isArray(songsData)) {
+            setRecentSongs(songsData);
+          } else {
+            console.warn('⚠️ Respuesta de songs inesperada:', songsData);
+            setRecentSongs([]);
+          }
+        } catch (songsErr) {
+          console.error('❌ Error cargando canciones:', songsErr.message);
+          setRecentSongs([]);
+        }
 
       } catch (err) {
-        console.error('Error cargando datos del sidebar:', err);
-        setError(err.message);
+        console.error('❌ Error cargando datos del sidebar:', err);
+        setError(err.response?.data?.error || err.message || 'Error desconocido');
+        setPlaylists([]);
+        setRecentSongs([]);
       } finally {
         setLoading(false);
       }
@@ -142,12 +177,22 @@ const Sidebar = () => {
             </NavLink>
           </motion.li>
 
-          {/* Mostrar indicador de carga */}
+          {/* ✅ FIXED: Mostrar indicador de carga con mejor manejo */}
           {loading && (
             <motion.li variants={itemVariants}>
-              <div className="sidebar-link small-text">
+              <div className="sidebar-link small-text loading-indicator">
                 <FaSpinner className="fa-spin" size={16} />
-                <span>Cargando...</span>
+                <span>Cargando playlists...</span>
+              </div>
+            </motion.li>
+          )}
+
+          {/* ✅ FIXED: Mostrar error si existe */}
+          {error && !loading && (
+            <motion.li variants={itemVariants}>
+              <div className="sidebar-link small-text error-indicator">
+                <FaExclamationTriangle size={16} />
+                <span title={error}>Error al cargar</span>
               </div>
             </motion.li>
           )}
@@ -159,8 +204,8 @@ const Sidebar = () => {
             const color = colors[index % colors.length];
 
             return (
-              <motion.li key={playlist.playlist_id} variants={itemVariants}>
-                <NavLink to={`/playlist/${playlist.playlist_id}`} className="sidebar-link small-text">
+              <motion.li key={playlist.playlist_id || playlist.id} variants={itemVariants}>
+                <NavLink to={`/playlist/${playlist.playlist_id || playlist.id}`} className="sidebar-link small-text">
                   <span className="playlist-dot" style={{backgroundColor: color}}></span>
                   <span title={playlist.name}>
                     {playlist.name.length > 20 ? `${playlist.name.substring(0, 20)}...` : playlist.name}
@@ -171,7 +216,7 @@ const Sidebar = () => {
           })}
 
           {/* Mostrar mensaje si no hay playlists */}
-          {!loading && playlists.length === 0 && (
+          {!loading && playlists.length === 0 && !error && (
             <motion.li variants={itemVariants}>
               <div className="sidebar-link small-text" style={{ opacity: 0.6 }}>
                 <FaMusic size={16} />

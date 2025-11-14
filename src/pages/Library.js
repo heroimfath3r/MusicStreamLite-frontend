@@ -89,14 +89,31 @@ const Library = () => {
   const loadSongs = useCallback(async () => {
     try {
       setError(null);
+      console.log('📚 Cargando canciones de la biblioteca...');
+      
       const response = await songsAPI.getAll();
+      
+      console.log('📦 Respuesta del servidor:', response);
 
-      // ✅ CORRECCIÓN: El API retorna { success, data, count }
-      // Extraer SOLO el array de canciones
-      const songsArray = response.data || response || [];
+      // ✅ FIXED: Manejar correctamente la estructura de respuesta
+      let songsArray = [];
+      
+      if (response.data) {
+        // Si viene { data: [...] }
+        songsArray = Array.isArray(response.data) ? response.data : [];
+      } else if (response.rows) {
+        // Si viene { rows: [...] }
+        songsArray = Array.isArray(response.rows) ? response.rows : [];
+      } else if (Array.isArray(response)) {
+        // Si viene directamente un array
+        songsArray = response;
+      } else if (response.songs) {
+        // Si viene { songs: [...] }
+        songsArray = Array.isArray(response.songs) ? response.songs : [];
+      }
 
       if (!Array.isArray(songsArray)) {
-        console.warn('⚠️ Response no es array:', response);
+        console.warn('⚠️ No se pudo extraer array de canciones:', response);
         setSongs([]);
         setFilteredSongs([]);
         return;
@@ -107,6 +124,7 @@ const Library = () => {
       console.log(`✅ Cargadas ${songsArray.length} canciones`);
     } catch (err) {
       console.error('❌ Error cargando canciones:', err);
+      console.error('Detalles:', err.response?.data || err.message);
       setError('Error al cargar las canciones. Intenta nuevamente.');
       setSongs([]);
       setFilteredSongs([]);
@@ -119,7 +137,20 @@ const Library = () => {
   const loadFavorites = useCallback(async () => {
     try {
       const response = await usersAPI.getFavorites();
-      const favArray = Array.isArray(response) ? response : response.favorites || [];
+      
+      console.log('❤️ Respuesta favoritos:', response);
+
+      // ✅ FIXED: Manejar múltiples estructuras de respuesta
+      let favArray = [];
+      
+      if (Array.isArray(response)) {
+        favArray = response;
+      } else if (response.favorites && Array.isArray(response.favorites)) {
+        favArray = response.favorites;
+      } else if (response.data && Array.isArray(response.data)) {
+        favArray = response.data;
+      }
+
       setFavorites(favArray);
       console.log(`✅ Cargados ${favArray.length} favoritos`);
     } catch (err) {
