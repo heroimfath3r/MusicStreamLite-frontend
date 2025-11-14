@@ -20,6 +20,7 @@ const userAPI = axios.create({
   },
 });
 
+
 // Crear instancia de axios para Catalog Service
 const catalogAPI = axios.create({
   baseURL: `${API_URLS.catalog}/api`,
