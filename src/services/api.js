@@ -6,7 +6,7 @@ import axios from 'axios';
 // ============================================
 const API_URLS = {
   user: process.env.REACT_APP_USER_API || 'https://user-service-586011919703.us-central1.run.app',
-  catalog: process.env.REACT_APP_CATALOG_API || 'https://catalog-service-418253200487.us-central1.run.app',
+  catalog: process.env.REACT_APP_CATALOG_API || 'https://catalog-service-586011919703.us-central1.run.app',
   analytics: process.env.REACT_APP_ANALYTICS_API || 'https://analytics-service-586011919703.us-central1.run.app'
 };
 
