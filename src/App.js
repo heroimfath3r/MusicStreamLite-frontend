@@ -21,6 +21,8 @@ const ArtistsLibrary = lazy(() => import('./pages/Artistslibrary.js'));
 const AlbumsLibrary = lazy(() => import('./pages/Albumslibrary.js'));
 const SongsLibrary = lazy(() => import('./pages/Songslibrary.js'));
 const Favorites = lazy(() => import('./pages/Favorites.js'));
+const PlaylistsView = lazy(() => import('./pages/PlaylistsView.js'));
+const PlaylistDetail = lazy(() => import('./pages/PlaylistDetail.js'));
 
 // Layouts NO son lazy
 import PublicLayout from './components/PublicLayout.jsx';
@@ -116,6 +118,8 @@ function AnimatedRoutes() {
               
               {/* Favoritos */}
               <Route path="/playlist/favorites" element={<Favorites />} />
+              <Route path="/playlists" element={<PlaylistsView />} />
+              <Route path="/playlists/:playlistId" element={<PlaylistDetail />} />
             </Route>
 
             {/* ============================================

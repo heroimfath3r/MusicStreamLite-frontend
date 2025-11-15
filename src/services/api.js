@@ -208,33 +208,45 @@ export const usersAPI = {
 // PLAYLISTS API (usa User Service)
 // ============================================
 export const playlistsAPI = {
+  // Obtener todas las playlists del usuario
   getAll: async () => {
     const response = await userAPI.get('/playlists');
     return response.data;
   },
 
+  // Crear nueva playlist
   create: async (playlistData) => {
     const response = await userAPI.post('/playlists', playlistData);
     return response.data;
   },
 
+  // Obtener canciones de una playlist
   getSongs: async (playlistId) => {
-    const response = await userAPI.get(`/playlists/${playlistId}`);
+    const response = await userAPI.get(`/playlists/${playlistId}/songs`);
     return response.data;
   },
 
+  // Agregar canción a playlist
   addSong: async (playlistId, songId) => {
     const response = await userAPI.post(`/playlists/${playlistId}/songs`, { song_id: songId });
     return response.data;
   },
 
+  // Remover canción de playlist
   removeSong: async (playlistId, songId) => {
     const response = await userAPI.delete(`/playlists/${playlistId}/songs/${songId}`);
     return response.data;
   },
 
+  // Eliminar playlist
   delete: async (playlistId) => {
     const response = await userAPI.delete(`/playlists/${playlistId}`);
+    return response.data;
+  },
+
+  // Actualizar playlist
+  update: async (playlistId, playlistData) => {
+    const response = await userAPI.put(`/playlists/${playlistId}`, playlistData);
     return response.data;
   },
 };

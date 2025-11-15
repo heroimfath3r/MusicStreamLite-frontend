@@ -1,11 +1,12 @@
 // src/components/MusicPlayer.js
-// ✅ COMPLETO con logs mejorados - REEMPLAZA TODO EL ARCHIVO
+// ✅ CON FUNCIONALIDAD DE FAVORITOS INTEGRADA
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSongStream } from '../hooks/useSongStream.js';
 import { usePlayer } from '../contexts/PlayerContext.jsx';
 import { motion } from 'framer-motion';
 import analyticsService from '../services/analyticsservice.js';
+import { usersAPI } from '../services/api.js';
 import { 
   FaPlay, 
   FaPause, 
@@ -39,17 +40,96 @@ const MusicPlayer = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [shuffleMode, setShuffleMode] = useState(false);
   const [repeatMode, setRepeatMode] = useState(0);
+  const [favorites, setFavorites] = useState([]);
+  const [loadingFavorite, setLoadingFavorite] = useState(false);
 
   const { url: streamUrl, loading: urlLoading, error: streamError } = useSongStream(currentSong?.song_id);
   const playEventTrackedRef = useRef(false); // 📊 ANALYTICS
 
   // ============================================
+  // CARGAR FAVORITOS AL MONTAR
+  // ============================================
+  useEffect(() => {
+    loadFavorites();
+  }, []);
+
+  // ============================================
+  // CARGAR FAVORITOS
+  // ============================================
+  const loadFavorites = useCallback(async () => {
+    try {
+      const response = await usersAPI.getFavorites();
+      
+      let favArray = [];
+      
+      if (Array.isArray(response)) {
+        favArray = response;
+      } else if (response.favorites && Array.isArray(response.favorites)) {
+        favArray = response.favorites;
+      } else if (response.data && Array.isArray(response.data)) {
+        favArray = response.data;
+      }
+
+      setFavorites(favArray);
+      console.log(`❤️ Cargados ${favArray.length} favoritos`);
+    } catch (err) {
+      console.error('⚠️ Error cargando favoritos:', err);
+      setFavorites([]);
+    }
+  }, []);
+
+  // ============================================
+  // VERIFICAR SI LA CANCIÓN ACTUAL ES FAVORITA
+  // ============================================
+  useEffect(() => {
+    if (currentSong?.song_id) {
+      const isFav = favorites.some(f => f.song_id === currentSong.song_id || f.songId === currentSong.song_id);
+      setIsFavorite(isFav);
+    } else {
+      setIsFavorite(false);
+    }
+  }, [currentSong, favorites]);
+
+  // ============================================
+  // AGREGAR/REMOVER DE FAVORITOS
+  // ============================================
+  const handleToggleFavorite = useCallback(async () => {
+    if (!currentSong?.song_id) {
+      console.warn('⚠️ No hay canción actual');
+      return;
+    }
+
+    try {
+      setLoadingFavorite(true);
+
+      if (isFavorite) {
+        // Remover de favoritos
+        console.log('❤️ Removiendo de favoritos...');
+        await usersAPI.removeFavorite(currentSong.song_id);
+        setFavorites(prev => prev.filter(f => f.song_id !== currentSong.song_id && f.songId !== currentSong.song_id));
+        setIsFavorite(false);
+        console.log('✅ Eliminado de favoritos');
+      } else {
+        // Agregar a favoritos
+        console.log('❤️ Agregando a favoritos...');
+        await usersAPI.addFavorite(currentSong.song_id);
+        await loadFavorites();
+        setIsFavorite(true);
+        console.log('✅ Agregado a favoritos');
+      }
+    } catch (err) {
+      console.error('❌ Error al toggle favorite:', err);
+      // Revertir estado si hay error
+      setIsFavorite(!isFavorite);
+    } finally {
+      setLoadingFavorite(false);
+    }
+  }, [currentSong, isFavorite, loadFavorites]);
+
+  // ============================================
   // ✅ MEJORADO: Cargar y reproducir cuando streamUrl esté listo
   // ============================================
   useEffect(() => {
-    // ============================================
-    // LOGS INICIALES
-    // ============================================
     console.log('🎬 [MusicPlayer] useEffect ejecutado');
     console.log('  - streamUrl:', streamUrl);
     console.log('  - urlLoading:', urlLoading);
@@ -57,7 +137,6 @@ const MusicPlayer = () => {
     console.log('  - currentSong:', currentSong?.title);
     console.log('  - isPlaying:', isPlaying);
 
-    // Validaciones
     if (!currentSong) {
       console.warn('⚠️ [MusicPlayer] No hay currentSong');
       return;
@@ -85,9 +164,6 @@ const MusicPlayer = () => {
       return;
     }
 
-    // ============================================
-    // CARGAR AUDIO
-    // ============================================
     const audio = audioRef.current;
     
     console.log('🔄 [MusicPlayer] Verificando si necesita recargar');
@@ -95,33 +171,27 @@ const MusicPlayer = () => {
     console.log('  - streamUrl nuevo:', streamUrl);
     console.log('  - ¿Son diferentes?:', audio.src !== streamUrl);
 
-    // Solo actualizar si la URL realmente cambió
     if (audio.src !== streamUrl) {
       console.log('📝 [MusicPlayer] Sí necesita recargar');
       console.log('🔄 [MusicPlayer] Cargando canción:', currentSong.title);
       
-      // Pausar cualquier reproducción anterior
       if (!audio.paused) {
         console.log('⏹️  [MusicPlayer] Pausando audio anterior');
         audio.pause();
       }
       
-      // Establecer nueva fuente
       console.log('🔗 [MusicPlayer] Estableciendo src a:', streamUrl.substring(0, 100) + '...');
       audio.src = streamUrl;
       
-      // Cargar el audio
       console.log('📦 [MusicPlayer] Llamando audio.load()');
       audio.load();
       
-      // ✅ Esperar a que el audio esté listo antes de reproducir
       const handleCanPlay = () => {
         console.log('✅ [MusicPlayer] Audio está listo (canplay event)');
         console.log('  - audio.readyState:', audio.readyState);
         console.log('  - audio.duration:', audio.duration);
         console.log('  - isPlaying desde estado:', isPlaying);
         
-        // Solo reproducir si el estado dice que debería estar reproduciéndose
         if (isPlaying) {
           console.log('▶️  [MusicPlayer] Iniciando reproducción (isPlaying=true)');
           const playPromise = audio.play();
@@ -142,15 +212,12 @@ const MusicPlayer = () => {
           console.log('⏸️  [MusicPlayer] No iniciando reproducción (isPlaying=false)');
         }
         
-        // Limpiar el listener
         audio.removeEventListener('canplay', handleCanPlay);
       };
       
-      // Listener para cuando el audio esté listo
       console.log('👂 [MusicPlayer] Agregando listener "canplay"');
       audio.addEventListener('canplay', handleCanPlay);
       
-      // Cleanup
       return () => {
         console.log('🧹 [MusicPlayer] Cleanup: removiendo listener canplay');
         audio.removeEventListener('canplay', handleCanPlay);
@@ -269,7 +336,6 @@ const MusicPlayer = () => {
           console.log('▶️  [MusicPlayer] onPlay event fired');
           setIsPlaying(true);
           
-          // 📊 ANALYTICS: Registrar reproducción (INTACTO)
           if (!playEventTrackedRef.current && currentSong?.song_id) {
             playEventTrackedRef.current = true;
             
@@ -326,9 +392,11 @@ const MusicPlayer = () => {
 
         <motion.button
           className={`like-btn ${isFavorite ? 'liked' : ''}`}
-          onClick={() => setIsFavorite(!isFavorite)}
+          onClick={handleToggleFavorite}
+          disabled={loadingFavorite}
           whileHover={{ scale: 1.2 }}
           whileTap={{ scale: 0.95 }}
+          title={isFavorite ? 'Remover de favoritos' : 'Agregar a favoritos'}
         >
           {isFavorite ? <FaHeart /> : <FaRegHeart />}
         </motion.button>
