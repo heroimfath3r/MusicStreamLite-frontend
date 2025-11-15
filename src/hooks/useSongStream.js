@@ -1,6 +1,6 @@
 // frontend/react-app/src/hooks/useSongStream.js
 import { useState, useEffect, useRef } from 'react';
-import api from '../services/api.js';  // ⭐ Importar instancia centralizada
+import { catalogAPI } from '../services/api.js';  // ✅ FIXED: Importar catalogAPI en lugar de api
 
 export const useSongStream = (songId) => {
   const [url, setUrl] = useState(null);
@@ -21,9 +21,9 @@ export const useSongStream = (songId) => {
 
         console.log('🎵 Obteniendo URL de stream para canción:', songId);
 
-        // ⭐ Usar instancia centralizada de api.js
-        // Esta instancia ya tiene el token automáticamente
-        const response = await api.get(`/stream/songs/${songId}/stream-url`);
+        // ✅ FIXED: Usar catalogAPI en lugar de api (que era userAPI)
+        // catalogAPI apunta a http://localhost:8001/api (o tu URL de Cloud Run de catalog-service)
+        const response = await catalogAPI.get(`/stream/songs/${songId}/stream-url`);
         const { url: newUrl, expiresIn } = response.data;
 
         console.log('✅ URL de stream obtenida');

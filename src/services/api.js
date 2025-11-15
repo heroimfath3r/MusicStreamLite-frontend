@@ -130,7 +130,7 @@ export const usersAPI = {
   },
 
   recordPlay: async (playData) => {
-    const response = await userAPI.post('/history', playData);
+    const response = await userAPI.post('/auth/play', playData);
     return response.data;
   },
 
