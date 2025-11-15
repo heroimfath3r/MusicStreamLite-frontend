@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { FaSearch, FaUser } from 'react-icons/fa';
-import { searchAPI } from '../services/api.js';
+import { artistsAPI } from '../services/api.js';
 import './artistslibrary.css';
 
 const ArtistsLibrary = () => {
@@ -47,7 +47,7 @@ const ArtistsLibrary = () => {
       setLoading(true);
       setError(null);
 
-      const response = await searchAPI.getAll();
+      const response = await artistsAPI.getAll();
       
       // Si no hay query, obtener todos
       // Alternativa: llamar directamente a artistsAPI si existe
