@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { FaSearch, FaCompactDisc } from 'react-icons/fa';
 import { searchAPI } from '../services/api.js';
-import './AlbumsLibrary.css';
+import './albumslibrary.css';
 
 const AlbumsLibrary = () => {
   // ============================================================

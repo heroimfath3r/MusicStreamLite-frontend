@@ -5,7 +5,7 @@ import { FaSearch, FaThLarge, FaList, FaFilter } from 'react-icons/fa';
 import SongCard from '../components/songCard.js';
 import { songsAPI, usersAPI } from '../services/api.js';
 import { usePlayer } from '../contexts/PlayerContext.jsx';
-import './SongsLibrary.css';
+import './songslibrary.css';
 
 const SongsLibrary = () => {
   // ============================================================

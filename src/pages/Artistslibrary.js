@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { FaSearch, FaUser } from 'react-icons/fa';
 import { searchAPI } from '../services/api.js';
-import './ArtistsLibrary.css';
+import './artistslibrary.css';
 
 const ArtistsLibrary = () => {
   // ============================================================
