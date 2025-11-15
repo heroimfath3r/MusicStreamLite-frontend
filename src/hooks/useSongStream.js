@@ -1,6 +1,8 @@
-// frontend/react-app/src/hooks/useSongStream.js
+// frontend/src/hooks/useSongStream.js
+// ✅ Mejorado con logging robusto - REEMPLAZA EL ARCHIVO COMPLETO
+
 import { useState, useEffect, useRef } from 'react';
-import { catalogAPI } from '../services/api.js';  // ✅ FIXED: Importar catalogAPI en lugar de api
+import { catalogAPI } from '../services/api.js';
 
 export const useSongStream = (songId) => {
   const [url, setUrl] = useState(null);
@@ -10,7 +12,10 @@ export const useSongStream = (songId) => {
 
   useEffect(() => {
     if (!songId) {
+      console.warn('⚠️ [useSongStream] songId es undefined/null');
       setUrl(null);
+      setError(null);
+      setLoading(false);
       return;
     }
 
@@ -19,44 +24,75 @@ export const useSongStream = (songId) => {
         setLoading(true);
         setError(null);
 
-        console.log('🎵 Obteniendo URL de stream para canción:', songId);
+        console.log('🎵 [useSongStream] Obteniendo URL para canción:', songId);
+        console.log('📍 [useSongStream] Endpoint: /stream/songs/' + songId + '/stream-url');
+        console.log('🌐 [useSongStream] Base URL:', catalogAPI.defaults.baseURL);
 
-        // ✅ FIXED: Usar catalogAPI en lugar de api (que era userAPI)
-        // catalogAPI apunta a http://localhost:8001/api (o tu URL de Cloud Run de catalog-service)
+        // Hacer la petición
         const response = await catalogAPI.get(`/stream/songs/${songId}/stream-url`);
-        const { url: newUrl, expiresIn } = response.data;
 
-        console.log('✅ URL de stream obtenida');
+        console.log('📦 [useSongStream] Respuesta completa:', response);
+        console.log('📦 [useSongStream] Response.data:', response.data);
+
+        const { url: newUrl, expiresIn, success, error: apiError } = response.data;
+
+        if (!success) {
+          console.error('❌ [useSongStream] API retornó success:false', response.data);
+          setError(apiError || 'Error desconocido del servidor');
+          setUrl(null);
+          setLoading(false);
+          return;
+        }
+
+        if (!newUrl) {
+          console.error('❌ [useSongStream] API retornó url vacía');
+          setError('URL vacía recibida del servidor');
+          setUrl(null);
+          setLoading(false);
+          return;
+        }
+
+        console.log('✅ [useSongStream] URL obtenida exitosamente');
+        console.log('🔗 [useSongStream] URL (primeros 100 chars):', newUrl.substring(0, 100) + '...');
+        console.log('⏱️  [useSongStream] Expira en:', expiresIn, 'segundos');
+
         setUrl(newUrl);
+        setError(null);
+        setLoading(false);
 
-        // Programar renovación 1 hora antes de que expire
-        // expiresIn viene en segundos (86400 = 24h)
-        const timeUntilExpiration = expiresIn * 1000; // Convertir a ms
-        const renewTime = timeUntilExpiration - (60 * 60 * 1000); // Restar 1 hora
+        // Programar renovación
+        const timeUntilExpiration = expiresIn * 1000;
+        const renewTime = timeUntilExpiration - (60 * 60 * 1000); // 1 hora antes de expirar
 
-        // Limpiar timeout anterior si existe
+        console.log('🔄 [useSongStream] Renovación programada en:', Math.round(renewTime / 1000), 'segundos');
+
         if (renewTimeoutRef.current) {
           clearTimeout(renewTimeoutRef.current);
         }
 
-        // Programar nueva renovación
         renewTimeoutRef.current = setTimeout(() => {
-          console.log('🔄 Renovando URL de canción...');
-          fetchStreamUrl(); // Recursivo: se llamará a sí mismo
+          console.log('🔄 [useSongStream] Renovando URL automáticamente...');
+          fetchStreamUrl();
         }, renewTime);
 
       } catch (err) {
-        console.error('❌ Error obteniendo URL de stream:', err);
-        setError(err.response?.data?.error || 'Error al cargar la canción');
+        console.error('❌ [useSongStream] Error completo:', err);
+        console.error('📋 [useSongStream] Error message:', err.message);
+        console.error('📋 [useSongStream] Error status:', err.response?.status);
+        console.error('📋 [useSongStream] Error data:', err.response?.data);
+        
+        const errorMessage = err.response?.data?.error || err.message || 'Error desconocido';
+        console.error('📋 [useSongStream] Error final:', errorMessage);
+        
+        setError(errorMessage);
         setUrl(null);
-      } finally {
         setLoading(false);
       }
     };
 
     fetchStreamUrl();
 
-    // Cleanup: limpiar timeout al desmontar o cambiar songId
+    // Cleanup
     return () => {
       if (renewTimeoutRef.current) {
         clearTimeout(renewTimeoutRef.current);

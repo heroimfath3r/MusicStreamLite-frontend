@@ -1,4 +1,5 @@
 // src/App.js
+// ✅ CORREGIDO: Todas las rutas incluidas
 import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,27 +16,20 @@ const Login = lazy(() => import('./pages/Login.js'));
 const Profile = lazy(() => import('./pages/Profile.js'));
 const Settings = lazy(() => import('./pages/Settings.js'));
 
+// ✅ NUEVO: Importar componentes de biblioteca que faltaban
+const ArtistsLibrary = lazy(() => import('./pages/Artistslibrary.js'));
+const AlbumsLibrary = lazy(() => import('./pages/Albumslibrary.js'));
+const SongsLibrary = lazy(() => import('./pages/Songslibrary.js'));
+const Favorites = lazy(() => import('./pages/Favorites.js'));
+
 // Layouts NO son lazy
 import PublicLayout from './components/PublicLayout.jsx';
 import PrivateLayout from './components/PrivateLayout.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import LoadingFallback from './components/LoadingFallback.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 import './App.css';
-
-// ============================================
-// 🔐 PROTECTED ROUTE - Proteger rutas privadas
-// ============================================
-const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  
-  if (!token) {
-    console.warn('⚠️ Sin token, redirigiendo a login');
-    return <Navigate to="/login" replace />;
-  }
-  
-  return children;
-};
 
 // ============================================
 // 🎬 ANIMACIONES DE PÁGINA
@@ -102,12 +96,26 @@ function AnimatedRoutes() {
                 </ProtectedRoute>
               }
             >
+              {/* RUTAS PRINCIPALES */}
               <Route path="/" element={<Home />} />
               <Route path="/home" element={<Home />} />
               <Route path="/search" element={<Search />} />
               <Route path="/library" element={<Library />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
+
+              {/* ✅ RUTAS FALTANTES AGREGADAS */}
+              {/* Biblioteca de Artistas */}
+              <Route path="/search/artists" element={<ArtistsLibrary />} />
+              
+              {/* Biblioteca de Álbumes */}
+              <Route path="/search/albums" element={<AlbumsLibrary />} />
+              
+              {/* Biblioteca de Canciones */}
+              <Route path="/search/songs" element={<SongsLibrary />} />
+              
+              {/* Favoritos */}
+              <Route path="/playlist/favorites" element={<Favorites />} />
             </Route>
 
             {/* ============================================

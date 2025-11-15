@@ -1,4 +1,6 @@
 // src/components/MusicPlayer.js
+// ✅ COMPLETO con logs mejorados - REEMPLAZA TODO EL ARCHIVO
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useSongStream } from '../hooks/useSongStream.js';
 import { usePlayer } from '../contexts/PlayerContext.jsx';
@@ -38,66 +40,125 @@ const MusicPlayer = () => {
   const [shuffleMode, setShuffleMode] = useState(false);
   const [repeatMode, setRepeatMode] = useState(0);
 
-  const { url: streamUrl, loading: urlLoading } = useSongStream(currentSong?.song_id);
+  const { url: streamUrl, loading: urlLoading, error: streamError } = useSongStream(currentSong?.song_id);
   const playEventTrackedRef = useRef(false); // 📊 ANALYTICS
 
   // ============================================
-  // ✅ Cargar y reproducir cuando streamUrl esté listo
+  // ✅ MEJORADO: Cargar y reproducir cuando streamUrl esté listo
   // ============================================
   useEffect(() => {
-    // Validar que tenemos todo lo necesario
-    if (!streamUrl || urlLoading || !audioRef.current || !currentSong) {
+    // ============================================
+    // LOGS INICIALES
+    // ============================================
+    console.log('🎬 [MusicPlayer] useEffect ejecutado');
+    console.log('  - streamUrl:', streamUrl);
+    console.log('  - urlLoading:', urlLoading);
+    console.log('  - streamError:', streamError);
+    console.log('  - currentSong:', currentSong?.title);
+    console.log('  - isPlaying:', isPlaying);
+
+    // Validaciones
+    if (!currentSong) {
+      console.warn('⚠️ [MusicPlayer] No hay currentSong');
       return;
     }
 
+    if (urlLoading) {
+      console.log('⏳ [MusicPlayer] Esperando URL de stream...');
+      return;
+    }
+
+    if (streamError) {
+      console.error('❌ [MusicPlayer] Error en stream:', streamError);
+      return;
+    }
+
+    if (!streamUrl) {
+      console.error('❌ [MusicPlayer] streamUrl es NULL/undefined');
+      console.error('  - urlLoading:', urlLoading);
+      console.error('  - streamError:', streamError);
+      return;
+    }
+
+    if (!audioRef.current) {
+      console.error('❌ [MusicPlayer] audioRef.current no existe');
+      return;
+    }
+
+    // ============================================
+    // CARGAR AUDIO
+    // ============================================
     const audio = audioRef.current;
     
+    console.log('🔄 [MusicPlayer] Verificando si necesita recargar');
+    console.log('  - audio.src actual:', audio.src);
+    console.log('  - streamUrl nuevo:', streamUrl);
+    console.log('  - ¿Son diferentes?:', audio.src !== streamUrl);
+
     // Solo actualizar si la URL realmente cambió
     if (audio.src !== streamUrl) {
-      console.log('🔄 Cargando canción:', currentSong.title);
+      console.log('📝 [MusicPlayer] Sí necesita recargar');
+      console.log('🔄 [MusicPlayer] Cargando canción:', currentSong.title);
       
       // Pausar cualquier reproducción anterior
-      audio.pause();
+      if (!audio.paused) {
+        console.log('⏹️  [MusicPlayer] Pausando audio anterior');
+        audio.pause();
+      }
       
       // Establecer nueva fuente
+      console.log('🔗 [MusicPlayer] Estableciendo src a:', streamUrl.substring(0, 100) + '...');
       audio.src = streamUrl;
       
       // Cargar el audio
+      console.log('📦 [MusicPlayer] Llamando audio.load()');
       audio.load();
       
       // ✅ Esperar a que el audio esté listo antes de reproducir
       const handleCanPlay = () => {
-        console.log('✅ Audio listo, reproduciendo automáticamente');
+        console.log('✅ [MusicPlayer] Audio está listo (canplay event)');
+        console.log('  - audio.readyState:', audio.readyState);
+        console.log('  - audio.duration:', audio.duration);
+        console.log('  - isPlaying desde estado:', isPlaying);
         
         // Solo reproducir si el estado dice que debería estar reproduciéndose
         if (isPlaying) {
+          console.log('▶️  [MusicPlayer] Iniciando reproducción (isPlaying=true)');
           const playPromise = audio.play();
           
           if (playPromise !== undefined) {
             playPromise
               .then(() => {
-                console.log('✅ Reproducción iniciada con éxito');
+                console.log('✅ [MusicPlayer] Reproducción iniciada exitosamente');
               })
               .catch(error => {
-                console.error('❌ Error al reproducir:', error);
+                console.error('❌ [MusicPlayer] Error al reproducir:', error);
+                console.error('  - Tipo de error:', error.name);
+                console.error('  - Mensaje:', error.message);
                 setIsPlaying(false);
               });
           }
+        } else {
+          console.log('⏸️  [MusicPlayer] No iniciando reproducción (isPlaying=false)');
         }
         
         // Limpiar el listener
         audio.removeEventListener('canplay', handleCanPlay);
       };
       
-      // Escuchar cuando el audio esté listo
+      // Listener para cuando el audio esté listo
+      console.log('👂 [MusicPlayer] Agregando listener "canplay"');
       audio.addEventListener('canplay', handleCanPlay);
       
-      // Cleanup: Remover listener si el componente se desmonta
+      // Cleanup
       return () => {
+        console.log('🧹 [MusicPlayer] Cleanup: removiendo listener canplay');
         audio.removeEventListener('canplay', handleCanPlay);
       };
+    } else {
+      console.log('⏭️  [MusicPlayer] URL no cambió, no necesita recargar');
     }
-  }, [streamUrl, urlLoading, currentSong, isPlaying]);
+  }, [streamUrl, urlLoading, currentSong, isPlaying, streamError]);
 
   // ============================================
   // Sincronizar volumen
@@ -119,6 +180,8 @@ const MusicPlayer = () => {
 
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
+      console.log('✅ [MusicPlayer] Metadata cargada');
+      console.log('  - Duración:', audioRef.current.duration);
       setDuration(audioRef.current.duration);
     }
   };
@@ -203,14 +266,19 @@ const MusicPlayer = () => {
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleSongEnd}
         onPlay={() => {
-          console.log('🎵 Audio onPlay event');
+          console.log('▶️  [MusicPlayer] onPlay event fired');
           setIsPlaying(true);
           
-          // 📊 ANALYTICS: Registrar reproducción
+          // 📊 ANALYTICS: Registrar reproducción (INTACTO)
           if (!playEventTrackedRef.current && currentSong?.song_id) {
             playEventTrackedRef.current = true;
             
             const userId = currentSong.user_id || 'anonymous';
+            
+            console.log('📊 [MusicPlayer] Registrando reproducción');
+            console.log('  - userId:', userId);
+            console.log('  - songId:', currentSong.song_id);
+            console.log('  - duración:', Math.round(duration));
             
             analyticsService.trackPlay(
               userId,
@@ -220,11 +288,22 @@ const MusicPlayer = () => {
           }
         }}
         onPause={() => {
-          console.log('⏸️ Audio onPause event');
+          console.log('⏸️  [MusicPlayer] onPause event fired');
           setIsPlaying(false);
         }}
         onError={(e) => {
-          console.error('❌ Audio error:', e.target.error);
+          console.error('❌ [MusicPlayer] Audio error event:', e.target.error);
+          console.error('  - Error code:', e.target.error?.code);
+          console.error('  - Error message:', e.target.error?.message);
+        }}
+        onLoadStart={() => {
+          console.log('📥 [MusicPlayer] onLoadStart event fired');
+        }}
+        onCanPlay={() => {
+          console.log('✅ [MusicPlayer] onCanPlay event fired');
+        }}
+        onCanPlayThrough={() => {
+          console.log('✅ [MusicPlayer] onCanPlayThrough event fired');
         }}
       />
 
