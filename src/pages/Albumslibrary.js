@@ -48,7 +48,7 @@ const AlbumsLibrary = () => {
       setLoading(true);
       setError(null);
 
-      const response = await searchAPI.getAll();
+      const response = await albumsAPI.getAll();
       
       const albumsArray = response.data || [];
 
