@@ -58,7 +58,6 @@ const analyticsAxios = axios.create({
 // SONGS API (usa Catalog Service)
 // ============================================
 export const songsAPI = {
-  // ✅ FIXED: Cambiar de '/' a '/songs'
   getAll: async (params = {}) => {
     const response = await catalogAPI.get('/songs', { params });
     return response.data;
@@ -86,6 +85,71 @@ export const songsAPI = {
 
   delete: async (id) => {
     const response = await catalogAPI.delete(`/songs/${id}`);
+    return response.data;
+  },
+};
+
+// ============================================
+// ALBUMS API (usa Catalog Service)
+// ============================================
+export const albumsAPI = {
+  getAll: async (params = {}) => {
+    const response = await catalogAPI.get('/albums', { params });
+    return response.data;
+  },
+
+  getById: async (id) => {
+    const response = await catalogAPI.get(`/albums/${id}`);
+    return response.data;
+  },
+
+  getByArtist: async (artistId) => {
+    const response = await catalogAPI.get(`/albums/artist/${artistId}`);
+    return response.data;
+  },
+
+  create: async (albumData) => {
+    const response = await catalogAPI.post('/albums', albumData);
+    return response.data;
+  },
+
+  update: async (id, albumData) => {
+    const response = await catalogAPI.put(`/albums/${id}`, albumData);
+    return response.data;
+  },
+
+  delete: async (id) => {
+    const response = await catalogAPI.delete(`/albums/${id}`);
+    return response.data;
+  },
+};
+
+// ============================================
+// ARTISTS API (usa Catalog Service)
+// ============================================
+export const artistsAPI = {
+  getAll: async (params = {}) => {
+    const response = await catalogAPI.get('/artists', { params });
+    return response.data;
+  },
+
+  getById: async (id) => {
+    const response = await catalogAPI.get(`/artists/${id}`);
+    return response.data;
+  },
+
+  create: async (artistData) => {
+    const response = await catalogAPI.post('/artists', artistData);
+    return response.data;
+  },
+
+  update: async (id, artistData) => {
+    const response = await catalogAPI.put(`/artists/${id}`, artistData);
+    return response.data;
+  },
+
+  delete: async (id) => {
+    const response = await catalogAPI.delete(`/artists/${id}`);
     return response.data;
   },
 };
@@ -129,7 +193,6 @@ export const usersAPI = {
     return response.data;
   },
 
-  // ✅ FIXED: Cambiar de '/history' a '/auth/play'
   recordPlay: async (playData) => {
     const response = await userAPI.post('/auth/play', playData);
     return response.data;
@@ -186,17 +249,17 @@ export const searchAPI = {
   },
 
   searchSongs: async (query) => {
-    const response = await catalogAPI.get('/search/songs', { params: { q: query } });
+    const response = await catalogAPI.get('/songs/search', { params: { q: query } });
     return response.data;
   },
 
   searchArtists: async (query) => {
-    const response = await catalogAPI.get('/search/artists', { params: { q: query } });
+    const response = await catalogAPI.get('/artists', { params: { q: query } });
     return response.data;
   },
 
   searchAlbums: async (query) => {
-    const response = await catalogAPI.get('/search/albums', { params: { q: query } });
+    const response = await catalogAPI.get('/albums', { params: { q: query } });
     return response.data;
   },
 };

@@ -47,7 +47,7 @@ const ArtistsLibrary = () => {
       setLoading(true);
       setError(null);
 
-      const response = await searchAPI.searchArtists('');
+      const response = await searchAPI.getAll();
       
       // Si no hay query, obtener todos
       // Alternativa: llamar directamente a artistsAPI si existe
