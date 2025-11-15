@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // ============================================
-// 🔥 Configuración de URLs según el entorno
+// 🔥 Configuración de URLs para CLOUD RUN
 // ============================================
 const API_URLS = {
   user: process.env.REACT_APP_USER_API || 'https://user-service-586011919703.us-central1.run.app',
@@ -20,8 +20,8 @@ const userAPI = axios.create({
   },
 });
 
-// Crear instancia de axios para Catalog Service
-const catalogAPI = axios.create({
+// ✅ FIXED: Crear instancia de axios para Catalog Service
+export const catalogAPI = axios.create({
   baseURL: `${API_URLS.catalog}/api`,
   headers: {
     'Content-Type': 'application/json',
@@ -129,6 +129,7 @@ export const usersAPI = {
     return response.data;
   },
 
+  // ✅ FIXED: Cambiar de '/history' a '/auth/play'
   recordPlay: async (playData) => {
     const response = await userAPI.post('/auth/play', playData);
     return response.data;
