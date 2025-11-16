@@ -172,9 +172,12 @@ const PlaylistDetail = () => {
   // REMOVER CANCIÓN DE PLAYLIST O FAVORITOS
   // ============================================================
   const handleRemoveSong = useCallback(async (songId) => {
+    console.log('🔍 playlistId es:', playlistId);
+    console.log('🔍 songId es:', songId); 
     if (!window.confirm('¿Estás seguro de que quieres remover esta canción?')) {
       return;
     }
+
 
     try {
       console.log('➖ Removiendo canción:', songId);
@@ -195,6 +198,7 @@ const PlaylistDetail = () => {
       console.error('❌ Error removiendo canción:', err);
       alert('Error al remover la canción');
     }
+    
   }, [playlistId]);
 
   // ============================================================
