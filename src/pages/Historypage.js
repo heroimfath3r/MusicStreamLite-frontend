@@ -102,6 +102,9 @@ const HistoryPage = () => {
   // ============================================
   const handlePlaySong = useCallback((song, index) => {
     try {
+      console.log('🎵 Song object:', song);
+      console.log('🎵 Song ID:', song.song_id);
+      console.log('🎵 Song ID (songId):', song.songId);
       console.log('🎵 Reproduciendo desde historial:', song.title);
       
       const enrichedHistory = getEnrichedHistory();
