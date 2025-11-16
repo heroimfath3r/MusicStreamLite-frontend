@@ -296,7 +296,7 @@ export const analyticsAPI = {
   },
 
   getUserHistory: async (userId) => {
-    const response = await analyticsAxios.get(`/users/${userId}/history`);
+    const response = await analyticsAxios.get(`/analytics/users/${userId}/history`);
     return response.data;
   },
 };
