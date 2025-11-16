@@ -172,7 +172,7 @@ const Sidebar = () => {
             </NavLink>
           </motion.li>
           <motion.li variants={itemVariants}>
-            <NavLink to="/favorites" className="sidebar-link small-text">
+            <NavLink to="/playlists/favorites" className="sidebar-link small-text">
               <FaHeart size={16} />
               <span>Canciones favoritas</span>
             </NavLink>
