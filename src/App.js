@@ -1,5 +1,6 @@
 // src/App.js
-// ✅ CORREGIDO: Todas las rutas incluidas
+// ✅ CORREGIDO: Todas las rutas incluidas y protegidas correctamente
+
 import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -93,6 +94,7 @@ function AnimatedRoutes() {
                 🔐 RUTAS PRIVADAS (con Header, Sidebar, Player)
                 ============================================ */}
             <Route
+              path="/"
               element={
                 <ProtectedRoute>
                   <PrivateLayout />
@@ -100,36 +102,33 @@ function AnimatedRoutes() {
               }
             >
               {/* RUTAS PRINCIPALES */}
-              <Route path="/" element={<Home />} />
-              <Route path="/home" element={<Home />} />
-              <Route path="/search" element={<Search />} />
-              <Route path="/library" element={<Library />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/history" element={<History />} />
+              <Route index element={<Home />} />
+              <Route path="home" element={<Home />} />
+              <Route path="search" element={<Search />} />
+              <Route path="library" element={<Library />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="history" element={<History />} />
 
-              {/* ✅ RUTAS FALTANTES AGREGADAS */}
-              {/* Biblioteca de Artistas */}
-              <Route path="/search/artists" element={<ArtistsLibrary />} />
+              {/* BIBLIOTECA DE ARTISTAS */}
+              <Route path="search/artists" element={<ArtistsLibrary />} />
               
-              {/* Biblioteca de Álbumes */}
-              <Route path="/search/albums" element={<AlbumsLibrary />} />
+              {/* BIBLIOTECA DE ÁLBUMES */}
+              <Route path="search/albums" element={<AlbumsLibrary />} />
               
-              {/* Biblioteca de Canciones */}
-              <Route path="/search/songs" element={<SongsLibrary />} />
+              {/* BIBLIOTECA DE CANCIONES */}
+              <Route path="search/songs" element={<SongsLibrary />} />
               
-              {/* Favoritos */}
-              <Route path="/playlist/favorites" element={<Favorites />} />
-              <Route path="/playlists" element={<PlaylistsView />} />
-              <Route path="/playlists/:playlistId" element={<PlaylistDetail />} />
+              {/* FAVORITOS Y PLAYLISTS */}
+              <Route path="playlist/favorites" element={<Favorites />} />
+              <Route path="playlists" element={<PlaylistsView />} />
+              <Route path="playlists/:playlistId" element={<PlaylistDetail />} />
             </Route>
 
             {/* ============================================
                 🔄 RUTAS POR DEFECTO
                 ============================================ */}
-            {/* 🔄 RUTA POR DEFECTO: Ir al login si no existe la ruta */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
-                <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </Suspense>
       </motion.main>
