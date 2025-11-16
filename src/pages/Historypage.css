@@ -181,13 +181,12 @@
 .history-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
+  gap: 15px;
+  padding: 15px;
   background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
-  cursor: pointer;
 }
 
 .history-item:hover {
@@ -208,24 +207,6 @@
 }
 
 /* ============================================
-   HISTORY COVER
-   ============================================ */
-.history-cover {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
-  overflow: hidden;
-  flex-shrink: 0;
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.history-cover img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* ============================================
    HISTORY INFO
    ============================================ */
 .history-info {
@@ -237,15 +218,6 @@
   font-size: 15px;
   font-weight: 600;
   color: #fff;
-  margin: 0 0 4px 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.history-song-artist {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -258,48 +230,15 @@
 .history-date {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .history-date svg {
   font-size: 12px;
-}
-
-/* ============================================
-   HISTORY ACTIONS
-   ============================================ */
-.history-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.history-play-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: #007aff;
-  border: none;
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s;
-  font-size: 14px;
-}
-
-.history-play-btn:hover {
-  background-color: #0051d5;
-  transform: scale(1.1);
-}
-
-.history-play-btn:active {
-  transform: scale(0.95);
 }
 
 /* ============================================
@@ -320,31 +259,12 @@
   }
 
   .history-item {
-    padding: 10px;
-    gap: 10px;
-  }
-
-  .history-cover {
-    width: 45px;
-    height: 45px;
+    padding: 12px;
+    gap: 12px;
   }
 
   .history-song-title {
     font-size: 14px;
-  }
-
-  .history-song-artist {
-    font-size: 12px;
-  }
-
-  .history-date {
-    display: none;
-  }
-
-  .history-play-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 12px;
   }
 }
 
@@ -363,20 +283,15 @@
   }
 
   .history-item {
-    padding: 8px;
-    gap: 8px;
-  }
-
-  .history-cover {
-    width: 40px;
-    height: 40px;
+    padding: 10px;
+    gap: 10px;
   }
 
   .history-song-title {
     font-size: 13px;
   }
 
-  .history-song-artist {
+  .history-date {
     font-size: 11px;
   }
 }

@@ -2,14 +2,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaArrowLeft, FaPlay, FaMusic, FaClock } from 'react-icons/fa';
+import { FaArrowLeft, FaMusic, FaClock } from 'react-icons/fa';
 import { analyticsAPI, songsAPI } from '../services/api.js';
-import { usePlayer } from '../contexts/PlayerContext.jsx';
 import './Historypage.css';
 
 const HistoryPage = () => {
   const navigate = useNavigate();
-  const { playSong, setPlayQueue } = usePlayer();
 
   const [history, setHistory] = useState([]);
   const [allSongs, setAllSongs] = useState([]);
@@ -60,7 +58,7 @@ const HistoryPage = () => {
       console.log(`✅ Cargadas ${historyArray.length} reproduciones`);
       setHistory(historyArray);
 
-      // Obtener todas las canciones para enriquecer datos
+      // Obtener todas las canciones
       console.log('🎵 Cargando canciones...');
       const songsResponse = await songsAPI.getAll();
 
@@ -82,38 +80,17 @@ const HistoryPage = () => {
   }, [userId]);
 
   // ============================================
-  // ENRIQUECER HISTORIAL CON DATOS DE CANCIONES
+  // ENRIQUECER HISTORIAL CON NOMBRE DE CANCIÓN
   // ============================================
   const getEnrichedHistory = useCallback(() => {
-  return history.map(playEvent => {
-    const fullSong = allSongs.find(s => s.song_id === playEvent.songId);
-    return {
-      ...playEvent,
-      song_id: playEvent.songId,  // ✅ AGREGAR ESTO
-      title: fullSong?.title || 'Canción desconocida',
-      artist_name: fullSong?.artist_name || 'Artista desconocido',
-      cover_image_url: fullSong?.cover_image_url,
-    };
-  });
-}, [history, allSongs]);
-
-  // ============================================
-  // REPRODUCIR CANCIÓN
-  // ============================================
-  const handlePlaySong = useCallback((song, index) => {
-    try {
-      console.log('🎵 Song object:', song);
-      console.log('🎵 Song ID:', song.song_id);
-      console.log('🎵 Song ID (songId):', song.songId);
-      console.log('🎵 Reproduciendo desde historial:', song.title);
-      
-      const enrichedHistory = getEnrichedHistory();
-      setPlayQueue(enrichedHistory, index);
-      playSong(enrichedHistory[index]);
-    } catch (err) {
-      console.error('❌ Error reproduciendo:', err);
-    }
-  }, [getEnrichedHistory, playSong, setPlayQueue]);
+    return history.map(playEvent => {
+      const song = allSongs.find(s => s.song_id === playEvent.songId);
+      return {
+        ...playEvent,
+        title: song?.title || `Canción ${playEvent.songId}`,
+      };
+    });
+  }, [history, allSongs]);
 
   // ============================================
   // FORMATEAR FECHA
@@ -195,7 +172,7 @@ const HistoryPage = () => {
         </div>
       </div>
 
-      {/* LISTA DE REPRODUCCIÓN */}
+      {/* LISTA */}
       <motion.div
         className="history-content"
         initial={{ opacity: 0 }}
@@ -221,37 +198,15 @@ const HistoryPage = () => {
                 {/* NÚMERO */}
                 <span className="history-number">{index + 1}</span>
 
-                {/* COVER */}
-                <div className="history-cover">
-                  <img
-                    src={playEvent.cover_image_url || 'https://via.placeholder.com/50x50/1a1f3a/007AFF?text=No+Cover'}
-                    alt={playEvent.title}
-                  />
-                </div>
-
-                {/* INFO */}
+                {/* NOMBRE CANCIÓN */}
                 <div className="history-info">
                   <h4 className="history-song-title">{playEvent.title}</h4>
-                  <p className="history-song-artist">{playEvent.artist_name}</p>
                 </div>
 
                 {/* FECHA */}
                 <div className="history-date">
                   <FaClock size={14} />
                   <span>{formatDate(playEvent.timestamp)}</span>
-                </div>
-
-                {/* ACCIONES */}
-                <div className="history-actions">
-                  <motion.button
-                    className="history-play-btn"
-                    onClick={() => handlePlaySong(playEvent, index)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    title="Reproducir"
-                  >
-                    <FaPlay />
-                  </motion.button>
                 </div>
               </motion.div>
             ))}
