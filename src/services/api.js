@@ -227,10 +227,15 @@ export const playlistsAPI = {
   },
 
   // Agregar canción a playlist
-  addSong: async (playlistId, songId) => {
-    const response = await userAPI.post(`/playlists/${playlistId}/songs`, { song_id: songId });
+addSong: async (playlistId, songId) => {
+  if (playlistId === 'favorites') {
+    const response = await userAPI.post(`/favorites`, { song_id: songId });
     return response.data;
-  },
+  }
+  
+  const response = await userAPI.post(`/playlists/${playlistId}/songs`, { song_id: songId });
+  return response.data;
+},
 
   // Remover canción de playlist
   removeSong: async (playlistId, songId) => {
