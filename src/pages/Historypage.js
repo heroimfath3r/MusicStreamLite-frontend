@@ -55,7 +55,37 @@ const HistoryPage = () => {
         historyArray = historyResponse;
       }
 
-      console.log(`✅ Cargadas ${historyArray.length} reproduciones`);
+      console.log(`✅ Cargadas ${historyArray.length} reproduciones (sin normalizar)`);
+
+      // ✅ NORMALIZAR TIMESTAMPS Y songId
+      historyArray = historyArray.map(item => {
+        let timestamp = item.timestamp;
+
+        // Convertir Firestore Timestamp a ISO string
+        if (timestamp && typeof timestamp.toDate === 'function') {
+          console.log('🔄 Normalizando Firestore Timestamp');
+          timestamp = timestamp.toDate().toISOString();
+        } else if (timestamp instanceof Object && timestamp.seconds) {
+          // Otra forma de Timestamp serializado (ej: {seconds: 1234567890, nanoseconds: 0})
+          console.log('🔄 Normalizando timestamp serializado');
+          timestamp = new Date(timestamp.seconds * 1000).toISOString();
+        } else if (timestamp instanceof Date) {
+          timestamp = timestamp.toISOString();
+        }
+
+        // Normalizar songId: si es string numérico, convertir a number
+        const songId = (typeof item.songId === 'string' && /^\d+$/.test(item.songId)) 
+          ? Number(item.songId) 
+          : item.songId;
+
+        return {
+          ...item,
+          timestamp,
+          songId
+        };
+      });
+
+      console.log(`✅ Historial normalizado: ${historyArray.length} reproduciones`);
       setHistory(historyArray);
 
       // Obtener todas las canciones
@@ -84,10 +114,20 @@ const HistoryPage = () => {
   // ============================================
   const getEnrichedHistory = useCallback(() => {
     return history.map(playEvent => {
-      const song = allSongs.find(s => s.song_id === playEvent.songId);
+      // ✅ BUSCAR POR MÚLTIPLES VARIANTES (song_id, id, songId)
+      const song = allSongs.find(s => 
+        s.song_id === playEvent.songId || 
+        s.id === playEvent.songId || 
+        s.songId === playEvent.songId ||
+        String(s.song_id) === String(playEvent.songId)
+      );
+
+      console.log(`🔍 Buscando songId: ${playEvent.songId} → Encontrado:`, song?.title || 'No encontrado');
+
       return {
         ...playEvent,
         title: song?.title || `Canción ${playEvent.songId}`,
+        artist: song?.artist_name || song?.artist || 'Artista desconocido'
       };
     });
   }, [history, allSongs]);
@@ -106,6 +146,7 @@ const HistoryPage = () => {
         minute: '2-digit'
       });
     } catch (err) {
+      console.error('Error formateando fecha:', err);
       return dateString;
     }
   };
