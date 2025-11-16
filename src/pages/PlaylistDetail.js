@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { FaArrowLeft, FaPlay, FaTrash, FaMusic, FaPlus } from 'react-icons/fa';
 import { playlistsAPI, songsAPI, usersAPI } from '../services/api.js';
 import { usePlayer } from '../contexts/PlayerContext.jsx';
-import SongCard from '../components/songCard.js';
 import './PlaylistDetail.css';
 
 const PlaylistDetail = () => {
