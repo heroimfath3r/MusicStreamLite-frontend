@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaArrowLeft, FaPlay, FaTrash, FaMusic, FaPlus } from 'react-icons/fa';
-import { playlistsAPI, songsAPI } from '../services/api.js';
+import { playlistsAPI, songsAPI, usersAPI } from '../services/api.js';
 import { usePlayer } from '../contexts/PlayerContext.jsx';
 import SongCard from '../components/songCard.js';
 import './PlaylistDetail.css';
@@ -48,28 +48,52 @@ const PlaylistDetail = () => {
       setError(null);
       console.log('📋 Cargando playlist:', playlistId);
 
-      // Cargar canciones de la playlist
-      const playlistResponse = await playlistsAPI.getSongs(playlistId);
-      
-      console.log('📦 Respuesta playlist:', playlistResponse);
+      let playlistResponse;
 
-      // Extraer datos de la playlist
-      setPlaylist({
-        id: playlistResponse.playlist.id,
-        name: playlistResponse.playlist.name,
-        description: playlistResponse.playlist.description
-      });
+      // ✅ CASO ESPECIAL PARA FAVORITOS
+      if (playlistId === 'favorites') {
+        const favResponse = await usersAPI.getFavorites();
+        
+        setPlaylist({
+          id: 'favorites',
+          name: 'Canciones Favoritas',
+          description: 'Tus canciones favoritas'
+        });
 
-      // Extraer canciones
-      let songsArray = [];
-      if (Array.isArray(playlistResponse.songs)) {
-        songsArray = playlistResponse.songs;
-      } else if (Array.isArray(playlistResponse)) {
-        songsArray = playlistResponse;
+        // Extraer canciones de favoritos
+        let songsArray = [];
+        if (favResponse.songs && Array.isArray(favResponse.songs)) {
+          songsArray = favResponse.songs;
+        } else if (Array.isArray(favResponse)) {
+          songsArray = favResponse;
+        }
+
+        setSongs(songsArray);
+        console.log(`✅ Cargadas ${songsArray.length} canciones favoritas`);
+      } else {
+        // Caso normal: Cargar canciones de una playlist regular
+        playlistResponse = await playlistsAPI.getSongs(playlistId);
+        
+        console.log('📦 Respuesta playlist:', playlistResponse);
+
+        // Extraer datos de la playlist
+        setPlaylist({
+          id: playlistResponse.playlist.id,
+          name: playlistResponse.playlist.name,
+          description: playlistResponse.playlist.description
+        });
+
+        // Extraer canciones
+        let songsArray = [];
+        if (Array.isArray(playlistResponse.songs)) {
+          songsArray = playlistResponse.songs;
+        } else if (Array.isArray(playlistResponse)) {
+          songsArray = playlistResponse;
+        }
+
+        setSongs(songsArray);
+        console.log(`✅ Cargadas ${songsArray.length} canciones de la playlist`);
       }
-
-      setSongs(songsArray);
-      console.log(`✅ Cargadas ${songsArray.length} canciones de la playlist`);
 
       // Cargar todas las canciones disponibles
       await loadAllSongs();
@@ -81,7 +105,8 @@ const PlaylistDetail = () => {
     } finally {
       setLoading(false);
     }
-  }, [playlistId]);
+  }, 
+  [playlistId]);
 
   // ============================================================
   // CARGAR TODAS LAS CANCIONES DISPONIBLES

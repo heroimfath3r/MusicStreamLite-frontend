@@ -125,7 +125,9 @@ function AnimatedRoutes() {
             {/* ============================================
                 🔄 RUTAS POR DEFECTO
                 ============================================ */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            {/* 🔄 RUTA POR DEFECTO: Ir al login si no existe la ruta */}
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </Suspense>
       </motion.main>
