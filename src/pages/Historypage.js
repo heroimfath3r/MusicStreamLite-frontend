@@ -85,16 +85,17 @@ const HistoryPage = () => {
   // ENRIQUECER HISTORIAL CON DATOS DE CANCIONES
   // ============================================
   const getEnrichedHistory = useCallback(() => {
-    return history.map(playEvent => {
-      const fullSong = allSongs.find(s => s.song_id === playEvent.songId);
-      return {
-        ...playEvent,
-        title: fullSong?.title || 'Canción desconocida',
-        artist_name: fullSong?.artist_name || 'Artista desconocido',
-        cover_image_url: fullSong?.cover_image_url,
-      };
-    });
-  }, [history, allSongs]);
+  return history.map(playEvent => {
+    const fullSong = allSongs.find(s => s.song_id === playEvent.songId);
+    return {
+      ...playEvent,
+      song_id: playEvent.songId,  // ✅ AGREGAR ESTO
+      title: fullSong?.title || 'Canción desconocida',
+      artist_name: fullSong?.artist_name || 'Artista desconocido',
+      cover_image_url: fullSong?.cover_image_url,
+    };
+  });
+}, [history, allSongs]);
 
   // ============================================
   // REPRODUCIR CANCIÓN
