@@ -164,14 +164,15 @@ const Sidebar = () => {
               <span>Nueva Playlist</span>
             </button>
           </motion.li>
+          {/* ✅ FIXED: Ruta correcta /playlists (con 's') */}
           <motion.li variants={itemVariants}>
-            <NavLink to="/playlist" className="sidebar-link small-text">
+            <NavLink to="/playlists" className="sidebar-link small-text">
               <FaList size={16} />
               <span>Todas las playlists</span>
             </NavLink>
           </motion.li>
           <motion.li variants={itemVariants}>
-            <NavLink to="/playlist/favorites" className="sidebar-link small-text">
+            <NavLink to="/favorites" className="sidebar-link small-text">
               <FaHeart size={16} />
               <span>Canciones favoritas</span>
             </NavLink>
@@ -205,7 +206,7 @@ const Sidebar = () => {
 
             return (
               <motion.li key={playlist.playlist_id || playlist.id} variants={itemVariants}>
-                <NavLink to={`/playlist/${playlist.playlist_id || playlist.id}`} className="sidebar-link small-text">
+                <NavLink to={`/playlists/${playlist.id}`} className="sidebar-link small-text">
                   <span className="playlist-dot" style={{backgroundColor: color}}></span>
                   <span title={playlist.name}>
                     {playlist.name.length > 20 ? `${playlist.name.substring(0, 20)}...` : playlist.name}
@@ -228,7 +229,7 @@ const Sidebar = () => {
           {/* Mostrar "Más..." si hay más de 8 playlists */}
           {!loading && playlists.length > 8 && (
             <motion.li variants={itemVariants}>
-              <NavLink to="/playlist/all" className="sidebar-link small-text">
+              <NavLink to="/playlists" className="sidebar-link small-text">
                 <FaList size={16} />
                 <span>Más... ({playlists.length - 8})</span>
               </NavLink>
