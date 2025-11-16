@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { FaArrowLeft, FaPlay, FaTrash, FaMusic, FaPlus } from 'react-icons/fa';
 import { playlistsAPI, songsAPI, usersAPI } from '../services/api.js';
 import { usePlayer } from '../contexts/PlayerContext.jsx';
+import SongCard from '../components/songCard.js';
 import './PlaylistDetail.css';
 
 const PlaylistDetail = () => {
@@ -129,7 +130,7 @@ const PlaylistDetail = () => {
   }, []);
 
   // ============================================================
-  // AGREGAR CANCIÓN A PLAYLIST
+  // AGREGAR CANCIÓN A PLAYLIST O FAVORITOS
   // ============================================================
   const handleAddSong = useCallback(async () => {
     if (!selectedSongId) {
@@ -141,7 +142,13 @@ const PlaylistDetail = () => {
       setAddingSong(true);
       console.log('➕ Agregando canción:', selectedSongId);
 
-      await playlistsAPI.addSong(playlistId, selectedSongId);
+      // ✅ SI ES FAVORITOS, USA usersAPI
+      if (playlistId === 'favorites') {
+        await usersAPI.addFavorite(selectedSongId);
+      } else {
+        // SINO, USA playlistsAPI
+        await playlistsAPI.addSong(playlistId, selectedSongId);
+      }
 
       console.log('✅ Canción agregada');
 
@@ -152,17 +159,17 @@ const PlaylistDetail = () => {
       setSelectedSongId(null);
       setShowAddSongModal(false);
 
-      alert('Canción agregada a la playlist');
+      alert('Canción agregada exitosamente');
     } catch (err) {
       console.error('❌ Error agregando canción:', err);
-      alert('Error al agregar la canción. Puede que ya esté en la playlist.');
+      alert('Error al agregar la canción. Puede que ya esté agregada.');
     } finally {
       setAddingSong(false);
     }
   }, [selectedSongId, playlistId, loadPlaylistDetails]);
 
   // ============================================================
-  // REMOVER CANCIÓN DE PLAYLIST
+  // REMOVER CANCIÓN DE PLAYLIST O FAVORITOS
   // ============================================================
   const handleRemoveSong = useCallback(async (songId) => {
     if (!window.confirm('¿Estás seguro de que quieres remover esta canción?')) {
@@ -171,12 +178,19 @@ const PlaylistDetail = () => {
 
     try {
       console.log('➖ Removiendo canción:', songId);
-      await playlistsAPI.removeSong(playlistId, songId);
+      
+      // ✅ SI ES FAVORITOS, USA usersAPI
+      if (playlistId === 'favorites') {
+        await usersAPI.removeFavorite(songId);
+      } else {
+        // SINO, USA playlistsAPI
+        await playlistsAPI.removeSong(playlistId, songId);
+      }
 
       setSongs(prev => prev.filter(s => s.songId !== songId));
 
       console.log('✅ Canción removida');
-      alert('Canción removida de la playlist');
+      alert('Canción removida exitosamente');
     } catch (err) {
       console.error('❌ Error removiendo canción:', err);
       alert('Error al remover la canción');
