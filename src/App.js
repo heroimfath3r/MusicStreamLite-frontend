@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlayerProvider } from './contexts/PlayerContext.jsx';
 
+
 // ============================================
 // 🔥 LAZY LOADING - Code Splitting
 // ============================================
