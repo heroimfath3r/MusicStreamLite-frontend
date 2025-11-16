@@ -339,7 +339,18 @@ const MusicPlayer = () => {
           if (!playEventTrackedRef.current && currentSong?.song_id) {
             playEventTrackedRef.current = true;
             
-            const userId = currentSong.user_id || 'anonymous';
+            const userId = (() => {
+  try {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      return user.user_id;
+    }
+  } catch (err) {
+    console.error('Error obteniendo userId:', err);
+  }
+  return 'anonymous';
+})();
             
             console.log('📊 [MusicPlayer] Registrando reproducción');
             console.log('  - userId:', userId);

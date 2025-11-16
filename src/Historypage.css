@@ -1,0 +1,382 @@
+/* src/pages/HistoryPage.css */
+
+.history-page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+  background: linear-gradient(135deg, #0a0e27 0%, #16213e 100%);
+  color: #fff;
+  overflow-y: auto;
+}
+
+/* ============================================
+   LOADING
+   ============================================ */
+.history-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  gap: 20px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-top: 4px solid #007aff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   ERROR
+   ============================================ */
+.history-error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  gap: 20px;
+  text-align: center;
+}
+
+.back-button {
+  padding: 10px 20px;
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.back-button:hover {
+  background-color: #0051d5;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.history-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+  flex-shrink: 0;
+}
+
+.back-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.history-title-section {
+  flex: 1;
+}
+
+.history-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+  color: #fff;
+}
+
+.history-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+/* ============================================
+   CONTENT
+   ============================================ */
+.history-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.history-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.history-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.history-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.history-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   NO HISTORY
+   ============================================ */
+.no-history {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  gap: 15px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.no-history svg {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.no-history p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.no-history .subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ============================================
+   HISTORY LIST
+   ============================================ */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.history-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(0, 122, 255, 0.5);
+  transform: translateX(4px);
+}
+
+/* ============================================
+   HISTORY NUMBER
+   ============================================ */
+.history-number {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  min-width: 30px;
+  text-align: center;
+}
+
+/* ============================================
+   HISTORY COVER
+   ============================================ */
+.history-cover {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.history-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ============================================
+   HISTORY INFO
+   ============================================ */
+.history-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-song-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 4px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-song-artist {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================================
+   HISTORY DATE
+   ============================================ */
+.history-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.history-date svg {
+  font-size: 12px;
+}
+
+/* ============================================
+   HISTORY ACTIONS
+   ============================================ */
+.history-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.history-play-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #007aff;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
+.history-play-btn:hover {
+  background-color: #0051d5;
+  transform: scale(1.1);
+}
+
+.history-play-btn:active {
+  transform: scale(0.95);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .history-page-container {
+    padding: 15px;
+  }
+
+  .history-header {
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .history-title {
+    font-size: 24px;
+  }
+
+  .history-item {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .history-cover {
+    width: 45px;
+    height: 45px;
+  }
+
+  .history-song-title {
+    font-size: 14px;
+  }
+
+  .history-song-artist {
+    font-size: 12px;
+  }
+
+  .history-date {
+    display: none;
+  }
+
+  .history-play-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .history-page-container {
+    padding: 12px;
+  }
+
+  .history-title {
+    font-size: 20px;
+  }
+
+  .history-number {
+    min-width: 25px;
+    font-size: 12px;
+  }
+
+  .history-item {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .history-cover {
+    width: 40px;
+    height: 40px;
+  }
+
+  .history-song-title {
+    font-size: 13px;
+  }
+
+  .history-song-artist {
+    font-size: 11px;
+  }
+}

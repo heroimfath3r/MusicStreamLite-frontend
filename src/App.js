@@ -15,6 +15,7 @@ const Library = lazy(() => import('./pages/Library.js'));
 const Login = lazy(() => import('./pages/Login.js'));
 const Profile = lazy(() => import('./pages/Profile.js'));
 const Settings = lazy(() => import('./pages/Settings.js'));
+const History = lazy(() => import('./pages/Historypage.js'));
 
 // ✅ NUEVO: Importar componentes de biblioteca que faltaban
 const ArtistsLibrary = lazy(() => import('./pages/Artistslibrary.js'));
@@ -105,6 +106,7 @@ function AnimatedRoutes() {
               <Route path="/library" element={<Library />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/history" element={<History />} />
 
               {/* ✅ RUTAS FALTANTES AGREGADAS */}
               {/* Biblioteca de Artistas */}
