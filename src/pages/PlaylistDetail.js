@@ -60,10 +60,10 @@ const PlaylistDetail = () => {
           description: 'Tus canciones favoritas'
         });
 
-        // Extraer canciones de favoritos
+        // ✅ CORREGIDO: Extraer canciones de favoritos (es "favorites", no "songs")
         let songsArray = [];
-        if (favResponse.songs && Array.isArray(favResponse.songs)) {
-          songsArray = favResponse.songs;
+        if (favResponse.favorites && Array.isArray(favResponse.favorites)) {
+          songsArray = favResponse.favorites;
         } else if (Array.isArray(favResponse)) {
           songsArray = favResponse;
         }

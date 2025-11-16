@@ -87,8 +87,8 @@
 .album-card {
   position: relative;
   background: rgba(20, 25, 45, 0.6);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border-radius: 16px;
   padding: 16px;
   border: 1px solid rgba(255, 255, 255, 0.05);
