@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { FaArrowLeft, FaPlay, FaMusic, FaClock } from 'react-icons/fa';
 import { analyticsAPI, songsAPI } from '../services/api.js';
 import { usePlayer } from '../contexts/PlayerContext.jsx';
-import './HistoryPage.css';
+import './Historypage.css';
 
 const HistoryPage = () => {
   const navigate = useNavigate();
