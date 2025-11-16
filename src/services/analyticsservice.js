@@ -24,7 +24,7 @@ const analyticsService = {
 
       console.log('📊 Enviando evento de play:', payload);
 
-      const response = await axios.post(`${ANALYTICS_URL}/api/plays`, payload, {
+      const response = await axios.post(`${ANALYTICS_URL}/api/analytics/plays`, payload, {
         timeout: 5000, // Espera máximo 5 segundos
       });
 
@@ -57,7 +57,7 @@ const analyticsService = {
 
       console.log('📊 Enviando duración escuchada:', payload);
 
-      const response = await axios.post(`${ANALYTICS_URL}/api/plays`, payload, {
+      const response = await axios.post(`${ANALYTICS_URL}/api/analytics/plays`, payload, {
         timeout: 5000,
       });
 
