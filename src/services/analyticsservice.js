@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const ANALYTICS_URL = process.env.REACT_APP_ANALYTICS_URL || 'http://localhost:3003';
+const ANALYTICS_URL = process.env.REACT_APP_ANALYTICS_API || 'https://analytics-service-586011919703.us-central1.run.app';
 
 /**
  * Servicio para registrar eventos de reproducción de canciones
