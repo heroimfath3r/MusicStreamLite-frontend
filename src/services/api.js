@@ -202,6 +202,13 @@ export const usersAPI = {
     const response = await userAPI.get('/history', { params });
     return response.data;
   },
+  
+  // Cambiar contraseña: POST /users/change-password
+  changePassword: async (currentPassword, newPassword) => {
+    const payload = { currentPassword, newPassword };
+    const response = await userAPI.post('/users/change-password', payload);
+    return response.data;
+  },
 };
 
 // ============================================
