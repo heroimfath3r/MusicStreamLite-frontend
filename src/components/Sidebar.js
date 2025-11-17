@@ -5,14 +5,12 @@ import {
   FaHome,
   FaSearch,
   FaBook,
-  FaPlus,
   FaHeart,
   FaCompactDisc,
   FaUserCircle,
   FaItunesNote,
   FaList,
   FaBroadcastTower,
-  FaMusic,
   FaSpinner,
   FaExclamationTriangle,
   FaClock
@@ -158,13 +156,7 @@ const Sidebar = () => {
         {/* Grupo: Playlists */}
         <motion.h3 variants={itemVariants}>Playlists</motion.h3>
         <motion.ul className="nav-group" variants={sidebarVariants}>
-          <motion.li variants={itemVariants}>
-            <button className="sidebar-link add-playlist-btn">
-              <FaPlus size={18} />
-              <span>Nueva Playlist</span>
-            </button>
-          </motion.li>
-          {/* ✅ FIXED: Ruta correcta /playlists (con 's') */}
+
           <motion.li variants={itemVariants}>
             <NavLink to="/playlists" className="sidebar-link small-text">
               <FaList size={16} />
@@ -238,16 +230,7 @@ const Sidebar = () => {
         </motion.ul>
       </nav>
 
-      {/* Footer */}
-      <motion.div className="sidebar-footer" variants={itemVariants}>
-        <a href="#open-in-music" className="sidebar-link footer-action">
-          <FaMusic size={18} />
-          <span>Abrir en Música?</span>
-        </a>
-        <a href="#beta" className="sidebar-link footer-action">
-          <span>Probar versión beta?</span>
-        </a>
-      </motion.div>
+
     </motion.aside>
   );
 };
