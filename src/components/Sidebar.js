@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaNewspaper } from 'react-icons/fa';
 import {
   FaHome,
   FaSearch,
@@ -15,7 +14,8 @@ import {
   FaBroadcastTower,
   FaMusic,
   FaSpinner,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaClock
 } from 'react-icons/fa';
 import { playlistsAPI, songsAPI } from '../services/api.js';
 import './Sidebar.css';
@@ -121,9 +121,9 @@ const Sidebar = () => {
             </NavLink>
           </motion.li>
           <motion.li variants={itemVariants}>
-            <NavLink to="/browse" className="sidebar-link">
-              <FaNewspaper size={18} />
-              <span>Novedades</span>
+            <NavLink to="/history" className="sidebar-link">
+              <FaClock size={18} />
+              <span>Historial</span>
             </NavLink>
           </motion.li>
         </motion.ul>
