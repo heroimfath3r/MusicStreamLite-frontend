@@ -9,24 +9,13 @@ const Search = () => {
   const [searchResults, setSearchResults] = useState({ songs: [], artists: [], albums: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedGenre, setSelectedGenre] = useState(null);
 
   // ============================================================
-  // GÉNEROS DISPONIBLES
-  // ============================================================
-  const genres = [
-    { id: 1, name: 'Hip Hop', color: '#007AFF' },
-    { id: 2, name: 'Rap', color: '#FF2D55' },
-    { id: 3, name: 'R&B', color: '#5856D6' },
-    { id: 4, name: 'Pop', color: '#34C759' }
-  ];
-
-  // ============================================================
-  // BÚSQUEDA POR TEXTO O GÉNERO
+  // BÚSQUEDA POR TEXTO
   // ============================================================
   useEffect(() => {
-    // Si no hay query ni género seleccionado, limpiar resultados
-    if (!searchQuery.trim() && !selectedGenre) {
+    // Si no hay query, limpiar resultados
+    if (!searchQuery.trim()) {
       setSearchResults({ songs: [], artists: [], albums: [] });
       setError(null);
       return;
@@ -38,53 +27,71 @@ const Search = () => {
       setError(null);
 
       try {
-        let response;
+        console.log(`🔍 Buscando: ${searchQuery}`);
+        const response = await searchAPI.searchAll(searchQuery);
 
-        // Si hay género seleccionado, buscar por género
-        if (selectedGenre) {
-          console.log(`🎵 Buscando canciones del género: ${selectedGenre.name}`);
-          response = await searchAPI.searchByGenre(selectedGenre.id);
-        } 
-        // Si hay query, buscar por texto
-        else if (searchQuery.trim()) {
-          console.log(`🔍 Buscando: ${searchQuery}`);
-          response = await searchAPI.searchAll(searchQuery);
+        console.log('📦 Respuesta del API:', response);
+
+        // ✅ FIXED: Manejar múltiples estructuras de respuesta
+        let songsArray = [];
+        let artistsArray = [];
+        let albumsArray = [];
+
+        // Intentar extraer canciones
+        if (response.results && response.results.songs) {
+          songsArray = response.results.songs || [];
+        } else if (response.songs && Array.isArray(response.songs)) {
+          songsArray = response.songs;
+        } else if (Array.isArray(response)) {
+          songsArray = response;
         }
 
-        if (response.success) {
-          // Mapear los datos de la API a la estructura esperada por el componente
-          const mappedResults = {
-            songs: response.results.songs?.map(song => ({
-              id: song.id || song.song_id,
-              title: song.title,
-              artist: song.artist_name || 'Desconocido',
-              album: song.album_title || 'Desconocido',
-              duration: song.duration || 'N/A',
-              audioFileUrl: song.audio_file_url
-            })) || [],
-            artists: response.results.artists?.map(artist => ({
-              id: artist.id,
-              name: artist.name,
-              bio: artist.bio || '',
-              imageUrl: artist.image_url
-            })) || [],
-            albums: response.results.albums?.map(album => ({
-              id: album.id,
-              title: album.title,
-              artist: album.artist_name || 'Desconocido',
-              releaseDate: album.release_date,
-              coverImageUrl: album.cover_image_url
-            })) || []
-          };
-
-          setSearchResults(mappedResults);
-          console.log(`✅ Resultados encontrados:`, mappedResults);
-        } else {
-          setError('Error al realizar la búsqueda');
+        // Intentar extraer artistas
+        if (response.results && response.results.artists) {
+          artistsArray = response.results.artists || [];
+        } else if (response.artists && Array.isArray(response.artists)) {
+          artistsArray = response.artists;
         }
+
+        // Intentar extraer álbumes
+        if (response.results && response.results.albums) {
+          albumsArray = response.results.albums || [];
+        } else if (response.albums && Array.isArray(response.albums)) {
+          albumsArray = response.albums;
+        }
+
+        // Mapear los datos de la API a la estructura esperada por el componente
+        const mappedResults = {
+          songs: songsArray.map(song => ({
+            id: song.song_id || song.id,
+            title: song.title || 'Sin título',
+            artist: song.artist_name || song.artist || 'Desconocido',
+            album: song.album_name || song.album_title || 'Desconocido',
+            duration: song.duration || 'N/A',
+            audioFileUrl: song.audio_file_url,
+            coverImageUrl: song.cover_image_url
+          })),
+          artists: artistsArray.map(artist => ({
+            id: artist.artist_id || artist.id,
+            name: artist.name || artist.artist_name || 'Desconocido',
+            bio: artist.bio || '',
+            imageUrl: artist.image_url
+          })),
+          albums: albumsArray.map(album => ({
+            id: album.album_id || album.id,
+            title: album.title || 'Sin título',
+            artist: album.artist_name || album.artist || 'Desconocido',
+            releaseDate: album.release_date,
+            coverImageUrl: album.cover_image_url
+          }))
+        };
+
+        setSearchResults(mappedResults);
+        console.log(`✅ Resultados encontrados:`, mappedResults);
       } catch (err) {
         console.error('❌ Error en búsqueda:', err);
         setError('Error al conectar con el servidor. Por favor, intenta de nuevo.');
+        setSearchResults({ songs: [], artists: [], albums: [] });
       } finally {
         setLoading(false);
       }
@@ -92,7 +99,7 @@ const Search = () => {
 
     // Cleanup: cancelar el timeout si el usuario sigue escribiendo
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, selectedGenre]);
+  }, [searchQuery]);
 
   // ============================================================
   // FILTRAR RESULTADOS SEGÚN TAB ACTIVO
@@ -108,25 +115,6 @@ const Search = () => {
     };
   }, [searchResults, activeTab]);
 
-  // ============================================================
-  // MANEJAR CLIC EN GÉNERO
-  // ============================================================
-  const handleGenreClick = (genre) => {
-    console.log(`📌 Género seleccionado: ${genre.name}`);
-    setSelectedGenre(genre);
-    setSearchQuery(''); // Limpiar búsqueda de texto
-    setActiveTab('songs'); // Cambiar a tab de canciones
-  };
-
-  // ============================================================
-  // LIMPIAR BÚSQUEDA POR GÉNERO
-  // ============================================================
-  const handleClearGenre = () => {
-    console.log('❌ Limpiando filtro de género');
-    setSelectedGenre(null);
-    setSearchResults({ songs: [], artists: [], albums: [] });
-  };
-
   return (
     <div className="search-page">
       <div className="search-header">
@@ -134,11 +122,10 @@ const Search = () => {
         <div className="search-box">
           <input
             type="text"
-            placeholder="Artistas, canciones o álbumes..."
+            placeholder="Busca por canción, artista o álbum..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="search-input-large"
-            disabled={selectedGenre ? true : false}
           />
           <button className="search-btn-large">
             {loading ? '⏳' : '🔍'}
@@ -160,42 +147,10 @@ const Search = () => {
       )}
 
       {/* ============================================================
-          RESULTADOS POR BÚSQUEDA O GÉNERO
+          RESULTADOS DE BÚSQUEDA
           ============================================================ */}
-      {(searchQuery || selectedGenre) && !loading && (
+      {searchQuery && !loading && (
         <div className="search-results">
-          {/* Mostrar género seleccionado */}
-          {selectedGenre && (
-            <div className="genre-badge" style={{
-              padding: '15px',
-              margin: '20px 0',
-              backgroundColor: selectedGenre.color,
-              color: 'white',
-              borderRadius: '8px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                🎵 Canciones de {selectedGenre.name}
-              </span>
-              <button 
-                onClick={handleClearGenre}
-                style={{
-                  background: 'rgba(255,255,255,0.3)',
-                  border: 'none',
-                  color: 'white',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
-              >
-                ✕ Limpiar
-              </button>
-            </div>
-          )}
-
           <div className="results-tabs">
             <button
               className={`tab ${activeTab === 'all' ? 'active' : ''}`}
@@ -209,22 +164,18 @@ const Search = () => {
             >
               Canciones ({searchResults.songs?.length || 0})
             </button>
-            {!selectedGenre && (
-              <>
-                <button
-                  className={`tab ${activeTab === 'artists' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('artists')}
-                >
-                  Artistas ({searchResults.artists?.length || 0})
-                </button>
-                <button
-                  className={`tab ${activeTab === 'albums' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('albums')}
-                >
-                  Álbumes ({searchResults.albums?.length || 0})
-                </button>
-              </>
-            )}
+            <button
+              className={`tab ${activeTab === 'artists' ? 'active' : ''}`}
+              onClick={() => setActiveTab('artists')}
+            >
+              Artistas ({searchResults.artists?.length || 0})
+            </button>
+            <button
+              className={`tab ${activeTab === 'albums' ? 'active' : ''}`}
+              onClick={() => setActiveTab('albums')}
+            >
+              Álbumes ({searchResults.albums?.length || 0})
+            </button>
           </div>
 
           <div className="results-content">
@@ -235,7 +186,10 @@ const Search = () => {
                 {filteredResults.songs.map(song => (
                   <div key={song.id} className="result-item">
                     <div className="song-info">
-                      <div className="song-cover"></div>
+                      <div 
+                        className="song-cover"
+                        style={song.coverImageUrl ? {backgroundImage: `url(${song.coverImageUrl})`} : {}}
+                      ></div>
                       <div className="song-details">
                         <h4>{song.title}</h4>
                         <p>{song.artist} • {song.album}</p>
@@ -285,13 +239,13 @@ const Search = () => {
             )}
 
             {/* Mensaje cuando no hay resultados */}
-            {(searchQuery || selectedGenre) &&
+            {searchQuery &&
               filteredResults.songs.length === 0 &&
               filteredResults.artists.length === 0 &&
               filteredResults.albums.length === 0 && (
                 <div className="no-results">
                   <h3>No se encontraron resultados</h3>
-                  <p>Intenta con otras palabras clave o género</p>
+                  <p>Intenta con otras palabras clave</p>
                 </div>
               )}
           </div>
@@ -299,23 +253,12 @@ const Search = () => {
       )}
 
       {/* ============================================================
-          SUGERENCIAS POR GÉNERO (SIN BÚSQUEDA)
+          SUGERENCIAS INICIALES (SIN BÚSQUEDA)
           ============================================================ */}
-      {!searchQuery && !selectedGenre && (
+      {!searchQuery && (
         <div className="search-suggestions">
-          <h2>Explorar por género</h2>
-          <div className="categories-grid">
-            {genres.map(genre => (
-              <div 
-                key={genre.id}
-                className="category-card" 
-                style={{ background: genre.color, cursor: 'pointer' }}
-                onClick={() => handleGenreClick(genre)}
-              >
-                <h3>{genre.name}</h3>
-              </div>
-            ))}
-          </div>
+          <h2>¿Qué estás buscando?</h2>
+          <p className="search-hint">Busca canciones, artistas o álbumes</p>
         </div>
       )}
     </div>

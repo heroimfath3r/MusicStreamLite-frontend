@@ -181,7 +181,13 @@ const Home = () => {
                 whileHover={{ y: -4 }}
               >
                 <div className="song-card-image">
-                  <FaMusic className="music-icon" />
+                  <img
+                    src={song.cover_image_url || 'https://storage.googleapis.com/music-stream-lite-bucket/collage%20jahseh.jpeg'}
+                    alt={song.title}
+                    onError={(e) => {
+                      e.target.src = 'https://storage.googleapis.com/music-stream-lite-bucket/collage%20jahseh.jpeg';
+                    }}
+                  />
                   <div className="play-overlay">
                     <FaPlay className="play-icon" />
                   </div>
@@ -267,7 +273,13 @@ const Home = () => {
                 whileHover={{ y: -6 }}
               >
                 <div className="discover-card-image">
-                  <FaMusic className="music-icon-discover" />
+                  <img
+                    src={song.cover_image_url || 'https://storage.googleapis.com/music-stream-lite-bucket/collage%20jahseh.jpeg'}
+                    alt={song.title}
+                    onError={(e) => {
+                      e.target.src = 'https://storage.googleapis.com/music-stream-lite-bucket/collage%20jahseh.jpeg';
+                    }}
+                  />
                   <div className="discover-play-overlay">
                     <FaPlay className="play-icon-discover" />
                   </div>
