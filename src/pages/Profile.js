@@ -6,7 +6,6 @@ import {
   FaEnvelope,
   FaCalendar,
   FaMusic,
-  FaHeart,
   FaEdit,
   FaSave,
   FaTimes
@@ -19,37 +18,6 @@ const Profile = () => {
   const { user, loading, refetch } = useCurrentUser();
   const [isEditing, setIsEditing] = useState(false);
   const [editedInfo, setEditedInfo] = useState({});
-  const [stats, setStats] = useState({
-    totalPlays: 0,
-    favoriteSongs: 0
-  });
-  const [loadingStats, setLoadingStats] = useState(true);
-
-  // Cargar estadísticas del usuario
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setLoadingStats(true);
-        const [statsResponse, favoritesResponse] = await Promise.all([
-          usersAPI.getHistory({ limit: 1 }),
-          usersAPI.getFavorites()
-        ]);
-
-        setStats({
-          totalPlays: statsResponse.total || 0,
-          favoriteSongs: favoritesResponse.count || 0
-        });
-      } catch (error) {
-        console.error('Error al cargar estadísticas:', error);
-      } finally {
-        setLoadingStats(false);
-      }
-    };
-
-    if (user) {
-      fetchStats();
-    }
-  }, [user]);
 
   // Inicializar editedInfo cuando el usuario cargue
   useEffect(() => {
@@ -240,42 +208,6 @@ const Profile = () => {
                 <div className="info-value">{user.country || 'No especificado'}</div>
               )}
             </div>
-          </div>
-        </motion.div>
-
-        {/* Estadísticas */}
-        <motion.div
-          className="profile-section"
-          variants={cardVariants}
-        >
-          <h2 className="section-title">Estadísticas de Reproducción</h2>
-
-          <div className="stats-grid">
-            <motion.div
-              className="stat-card"
-              whileHover={{ scale: 1.05 }}
-            >
-              <div className="stat-icon">
-                <FaMusic />
-              </div>
-              <div className="stat-value">
-                {loadingStats ? '...' : stats.totalPlays}
-              </div>
-              <div className="stat-label">Canciones reproducidas</div>
-            </motion.div>
-
-            <motion.div
-              className="stat-card"
-              whileHover={{ scale: 1.05 }}
-            >
-              <div className="stat-icon">
-                <FaHeart />
-              </div>
-              <div className="stat-value">
-                {loadingStats ? '...' : stats.favoriteSongs}
-              </div>
-              <div className="stat-label">Canciones favoritas</div>
-            </motion.div>
           </div>
         </motion.div>
       </div>
