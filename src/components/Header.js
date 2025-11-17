@@ -31,6 +31,15 @@ const Header = () => {
     navigate('/login');
   };
 
+  const toggleUserMenu = () => {
+    setIsUserMenuOpen(!isUserMenuOpen);
+  };
+
+  // Cerrar menú al hacer click en un item
+  const closeUserMenu = () => {
+    setIsUserMenuOpen(false);
+  };
+
   const containerVariants = {
     hidden: { opacity: 0, y: -20 },
     visible: {
@@ -117,14 +126,12 @@ const Header = () => {
         {/* User menu */}
         <motion.div
           className="user-menu-container"
-          onMouseEnter={() => setIsUserMenuOpen(true)}
-          onMouseLeave={() => setIsUserMenuOpen(false)}
         >
           <motion.button
             className="user-avatar"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+            onClick={toggleUserMenu}
           >
             <FaUser size={16} />
           </motion.button>
@@ -156,11 +163,11 @@ const Header = () => {
             <div className="dropdown-divider"></div>
 
             <div className="dropdown-menu">
-              <Link to="/profile" className="dropdown-item" onClick={() => setIsUserMenuOpen(false)}>
+              <Link to="/profile" className="dropdown-item" onClick={closeUserMenu}>
                 <FaUser size={16} />
                 <span>Mi Perfil</span>
               </Link>
-              <Link to="/settings" className="dropdown-item" onClick={() => setIsUserMenuOpen(false)}>
+              <Link to="/settings" className="dropdown-item" onClick={closeUserMenu}>
                 <FaCog size={16} />
                 <span>Configuración</span>
               </Link>
