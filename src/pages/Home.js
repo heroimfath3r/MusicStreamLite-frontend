@@ -74,7 +74,8 @@ const Home = () => {
           return {
             ...playEvent,
             title: song?.title || `Canción ${playEvent.songId}`,
-            artist: song?.artist_name || 'Artista desconocido'
+            artist: song?.artist_name || 'Artista desconocido',
+            cover_image_url: song?.cover_image_url
           };
         });
 
@@ -88,13 +89,13 @@ const Home = () => {
   };
 
   // ============================================================
-  // GÉNEROS DESTACADOS
+  // GÉNEROS DESTACADOS - COLORES SERIOS
   // ============================================================
   const genres = [
-    { id: 1, name: 'Hip Hop', icon: '🎤', color: '#007AFF', songs: 4 },
-    { id: 2, name: 'Rap', icon: '🔥', color: '#FF2D55', songs: 2 },
-    { id: 3, name: 'R&B', icon: '💝', color: '#5856D6', songs: 2 },
-    { id: 4, name: 'Pop', icon: '✨', color: '#34C759', songs: 1 }
+    { id: 1, name: 'Hip Hop', icon: '🎤', color: '#1B3A5E', accentColor: '#007AFF', songs: 4 },
+    { id: 2, name: 'Rap', icon: '🔥', color: '#3A1B1B', accentColor: '#FF2D55', songs: 2 },
+    { id: 3, name: 'R&B', icon: '💝', color: '#1B2D3A', accentColor: '#5856D6', songs: 2 },
+    { id: 4, name: 'Pop', icon: '✨', color: '#2D3A1B', accentColor: '#34C759', songs: 1 }
   ];
 
   // ============================================================
@@ -147,12 +148,12 @@ const Home = () => {
       animate="visible"
     >
       {/* ============================================================
-          HEADER CON BIENVENIDA
+          HEADER CON BIENVENIDA - TIPOGRAFÍA 2K ROCKERA
           ============================================================ */}
       <motion.div className="home-header" variants={sectionVariants}>
         <div className="header-content">
-          <h1>🎵 Hola, bienvenido</h1>
-          <p>Tu música, tu ritmo, tu momento</p>
+          <h1 className="header-title-2k">🎵 Hola, bienvenido</h1>
+          <p className="header-subtitle-2k">Tu música, tu ritmo, tu momento</p>
         </div>
       </motion.div>
 
@@ -187,6 +188,7 @@ const Home = () => {
                     onError={(e) => {
                       e.target.src = 'https://storage.googleapis.com/music-stream-lite-bucket/collage%20jahseh.jpeg';
                     }}
+                    className="card-image"
                   />
                   <div className="play-overlay">
                     <FaPlay className="play-icon" />
@@ -224,15 +226,15 @@ const Home = () => {
               className="genre-card"
               variants={cardVariants}
               style={{ 
-                background: `linear-gradient(135deg, ${genre.color}22, ${genre.color}11)`,
-                borderColor: genre.color
+                background: `linear-gradient(135deg, ${genre.color}dd, ${genre.color})`,
+                borderColor: genre.accentColor
               }}
               onClick={() => navigate(`/search?genre=${genre.id}`)}
             >
               <div 
                 className="genre-badge"
                 style={{ 
-                  background: `linear-gradient(135deg, ${genre.color}, ${genre.color}dd)`,
+                  background: `linear-gradient(135deg, ${genre.accentColor}, ${genre.accentColor}dd)`,
                   animation: `float${index + 1} 3s ease-in-out infinite`
                 }}
               >
@@ -279,6 +281,7 @@ const Home = () => {
                     onError={(e) => {
                       e.target.src = 'https://storage.googleapis.com/music-stream-lite-bucket/collage%20jahseh.jpeg';
                     }}
+                    className="discover-card-image-img"
                   />
                   <div className="discover-play-overlay">
                     <FaPlay className="play-icon-discover" />
