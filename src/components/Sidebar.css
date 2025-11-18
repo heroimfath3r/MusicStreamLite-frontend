@@ -12,6 +12,7 @@
   overflow-y: auto;
   border-right: 1px solid rgba(255, 255, 255, 0.05); /* Sutil divisor */
   font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  position: -webkit-sticky;
   position: sticky;
   top: 0;
   height: calc(100vh - var(--apple-player-height)); /* Ajusta la altura para el player */

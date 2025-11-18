@@ -2,23 +2,22 @@
 import axios from 'axios';
 
 // ============================================
-// 🌐 Configuración de API Gateway en GCP
+// 🔥 GATEWAY CENTRALIZADO EN GCP
 // ============================================
-const API_GATEWAY_URL = process.env.REACT_APP_API_GATEWAY 
-  || 'https://musicstream-gateway-7h7kd74n.uc.gateway.dev';
+const GATEWAY_URL = process.env.REACT_APP_GATEWAY_URL || 'https://musicstream-gateway-7h7kd74n.uc.gateway.dev';
 
-console.log('🌐 API Gateway configurado:', API_GATEWAY_URL);
+console.log('🌐 API Gateway:', GATEWAY_URL);
 
-// Crear instancia única con API Gateway
+// Crear instancia única de axios para el Gateway
 const apiClient = axios.create({
-  baseURL: `${API_GATEWAY_URL}/api`,
+  baseURL: GATEWAY_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 // ============================================
-// Interceptor global para agregar token a TODAS las peticiones
+// Interceptor para agregar token a TODAS las peticiones
 // ============================================
 apiClient.interceptors.request.use(
   (config) => {
@@ -38,32 +37,32 @@ apiClient.interceptors.request.use(
 // ============================================
 export const songsAPI = {
   getAll: async (params = {}) => {
-    const response = await apiClient.get('/songs', { params });
+    const response = await apiClient.get('/api/songs', { params });
     return response.data;
   },
 
   getById: async (id) => {
-    const response = await apiClient.get(`/songs/${id}`);
+    const response = await apiClient.get(`/api/songs/${id}`);
     return response.data;
   },
 
   search: async (query) => {
-    const response = await apiClient.get('/songs/search', { params: { q: query } });
+    const response = await apiClient.get('/api/songs/search', { params: { q: query } });
     return response.data;
   },
 
   create: async (songData) => {
-    const response = await apiClient.post('/songs', songData);
+    const response = await apiClient.post('/api/songs', songData);
     return response.data;
   },
 
   update: async (id, songData) => {
-    const response = await apiClient.put(`/songs/${id}`, songData);
+    const response = await apiClient.put(`/api/songs/${id}`, songData);
     return response.data;
   },
 
   delete: async (id) => {
-    const response = await apiClient.delete(`/songs/${id}`);
+    const response = await apiClient.delete(`/api/songs/${id}`);
     return response.data;
   },
 };
@@ -73,32 +72,37 @@ export const songsAPI = {
 // ============================================
 export const albumsAPI = {
   getAll: async (params = {}) => {
-    const response = await apiClient.get('/albums', { params });
+    const response = await apiClient.get('/api/albums', { params });
     return response.data;
   },
 
   getById: async (id) => {
-    const response = await apiClient.get(`/albums/${id}`);
+    const response = await apiClient.get(`/api/albums/${id}`);
     return response.data;
   },
 
   getByArtist: async (artistId) => {
-    const response = await apiClient.get(`/albums/artist/${artistId}`);
+    const response = await apiClient.get(`/api/albums/artist/${artistId}`);
+    return response.data;
+  },
+
+  getSongs: async (albumId) => {
+    const response = await apiClient.get(`/api/albums/${albumId}/songs`);
     return response.data;
   },
 
   create: async (albumData) => {
-    const response = await apiClient.post('/albums', albumData);
+    const response = await apiClient.post('/api/albums', albumData);
     return response.data;
   },
 
   update: async (id, albumData) => {
-    const response = await apiClient.put(`/albums/${id}`, albumData);
+    const response = await apiClient.put(`/api/albums/${id}`, albumData);
     return response.data;
   },
 
   delete: async (id) => {
-    const response = await apiClient.delete(`/albums/${id}`);
+    const response = await apiClient.delete(`/api/albums/${id}`);
     return response.data;
   },
 };
@@ -108,27 +112,32 @@ export const albumsAPI = {
 // ============================================
 export const artistsAPI = {
   getAll: async (params = {}) => {
-    const response = await apiClient.get('/artists', { params });
+    const response = await apiClient.get('/api/artists', { params });
     return response.data;
   },
 
   getById: async (id) => {
-    const response = await apiClient.get(`/artists/${id}`);
+    const response = await apiClient.get(`/api/artists/${id}`);
+    return response.data;
+  },
+
+  search: async (query) => {
+    const response = await apiClient.get('/api/artists', { params: { q: query } });
     return response.data;
   },
 
   create: async (artistData) => {
-    const response = await apiClient.post('/artists', artistData);
+    const response = await apiClient.post('/api/artists', artistData);
     return response.data;
   },
 
   update: async (id, artistData) => {
-    const response = await apiClient.put(`/artists/${id}`, artistData);
+    const response = await apiClient.put(`/api/artists/${id}`, artistData);
     return response.data;
   },
 
   delete: async (id) => {
-    const response = await apiClient.delete(`/artists/${id}`);
+    const response = await apiClient.delete(`/api/artists/${id}`);
     return response.data;
   },
 };
@@ -138,53 +147,48 @@ export const artistsAPI = {
 // ============================================
 export const usersAPI = {
   register: async (userData) => {
-    const response = await apiClient.post('/auth/register', userData);
+    const response = await apiClient.post('/api/auth/register', userData);
     return response.data;
   },
 
   login: async (credentials) => {
-    const response = await apiClient.post('/auth/login', credentials);
+    const response = await apiClient.post('/api/auth/login', credentials);
     return response.data;
   },
 
   getProfile: async () => {
-    const response = await apiClient.get('/users/profile');
+    const response = await apiClient.get('/api/users/profile');
     return response.data;
   },
 
   updateProfile: async (userData) => {
-    const response = await apiClient.put('/users/profile', userData);
-    return response.data;
-  },
-
-  addFavorite: async (songId) => {
-    const response = await apiClient.post('/favorites', { song_id: songId });
-    return response.data;
-  },
-
-  getFavorites: async () => {
-    const response = await apiClient.get('/favorites');
-    return response.data;
-  },
-
-  removeFavorite: async (songId) => {
-    const response = await apiClient.delete(`/favorites/${songId}`);
-    return response.data;
-  },
-
-  recordPlay: async (playData) => {
-    const response = await apiClient.post('/auth/play', playData);
-    return response.data;
-  },
-
-  getHistory: async (params = {}) => {
-    const response = await apiClient.get('/history', { params });
+    const response = await apiClient.put('/api/users/profile', userData);
     return response.data;
   },
 
   changePassword: async (currentPassword, newPassword) => {
     const payload = { currentPassword, newPassword };
-    const response = await apiClient.post('/users/change-password', payload);
+    const response = await apiClient.post('/api/users/change-password', payload);
+    return response.data;
+  },
+
+  addFavorite: async (songId) => {
+    const response = await apiClient.post('/api/favorites', { song_id: songId });
+    return response.data;
+  },
+
+  getFavorites: async () => {
+    const response = await apiClient.get('/api/favorites');
+    return response.data;
+  },
+
+  removeFavorite: async (songId) => {
+    const response = await apiClient.delete(`/api/favorites/${songId}`);
+    return response.data;
+  },
+
+  getHistory: async (params = {}) => {
+    const response = await apiClient.get('/api/history', { params });
     return response.data;
   },
 };
@@ -193,50 +197,43 @@ export const usersAPI = {
 // PLAYLISTS API (User Service)
 // ============================================
 export const playlistsAPI = {
-  // Obtener todas las playlists del usuario
   getAll: async () => {
-    const response = await apiClient.get('/playlists');
+    const response = await apiClient.get('/api/playlists');
     return response.data;
   },
 
-  // Crear nueva playlist
   create: async (playlistData) => {
-    const response = await apiClient.post('/playlists', playlistData);
+    const response = await apiClient.post('/api/playlists', playlistData);
     return response.data;
   },
 
-  // Obtener canciones de una playlist
   getSongs: async (playlistId) => {
-    const response = await apiClient.get(`/playlists/${playlistId}/songs`);
+    const response = await apiClient.get(`/api/playlists/${playlistId}/songs`);
     return response.data;
   },
 
-  // Agregar canción a playlist
   addSong: async (playlistId, songId) => {
     if (playlistId === 'favorites') {
-      const response = await apiClient.post(`/favorites`, { song_id: songId });
+      const response = await apiClient.post(`/api/favorites`, { song_id: songId });
       return response.data;
     }
     
-    const response = await apiClient.post(`/playlists/${playlistId}/songs`, { song_id: songId });
+    const response = await apiClient.post(`/api/playlists/${playlistId}/songs`, { song_id: songId });
     return response.data;
   },
 
-  // Remover canción de playlist
   removeSong: async (playlistId, songId) => {
-    const response = await apiClient.delete(`/playlists/${playlistId}/songs/${songId}`);
+    const response = await apiClient.delete(`/api/playlists/${playlistId}/songs/${songId}`);
     return response.data;
   },
 
-  // Eliminar playlist
   delete: async (playlistId) => {
-    const response = await apiClient.delete(`/playlists/${playlistId}`);
+    const response = await apiClient.delete(`/api/playlists/${playlistId}`);
     return response.data;
   },
 
-  // Actualizar playlist
   update: async (playlistId, playlistData) => {
-    const response = await apiClient.put(`/playlists/${playlistId}`, playlistData);
+    const response = await apiClient.put(`/api/playlists/${playlistId}`, playlistData);
     return response.data;
   },
 };
@@ -246,22 +243,22 @@ export const playlistsAPI = {
 // ============================================
 export const searchAPI = {
   searchAll: async (query) => {
-    const response = await apiClient.get('/search', { params: { q: query } });
+    const response = await apiClient.get('/api/search', { params: { q: query } });
     return response.data;
   },
 
   searchSongs: async (query) => {
-    const response = await apiClient.get('/songs/search', { params: { q: query } });
+    const response = await apiClient.get('/api/songs/search', { params: { q: query } });
     return response.data;
   },
 
   searchArtists: async (query) => {
-    const response = await apiClient.get('/artists', { params: { q: query } });
+    const response = await apiClient.get('/api/artists', { params: { q: query } });
     return response.data;
   },
 
   searchAlbums: async (query) => {
-    const response = await apiClient.get('/albums', { params: { q: query } });
+    const response = await apiClient.get('/api/albums', { params: { q: query } });
     return response.data;
   },
 };
@@ -270,21 +267,54 @@ export const searchAPI = {
 // ANALYTICS API (Analytics Service)
 // ============================================
 export const analyticsAPI = {
+  // Track song play event
   trackPlay: async (data) => {
-    const response = await apiClient.post('/plays', data);
+    const response = await apiClient.post('/api/plays', data);
     return response.data;
   },
 
-  getTrending: async () => {
-    const response = await apiClient.get('/trending');
+  // Get trending songs
+  getTrending: async (params = {}) => {
+    const response = await apiClient.get('/api/trending', { params });
     return response.data;
   },
 
-  getUserHistory: async (userId) => {
-    const response = await apiClient.get(`/analytics/users/${userId}/history`);
+  // Get user listening history from analytics
+  getUserHistory: async (userId, params = {}) => {
+    const response = await apiClient.get(`/api/analytics/users/${userId}/history`, { params });
+    return response.data;
+  },
+
+  // Record engagement event (likes, skips, shares, etc)
+  recordEngagement: async (data) => {
+    const response = await apiClient.post('/api/engagement', data);
+    return response.data;
+  },
+
+  // Get personalized recommendations for user
+  getRecommendations: async (userId, params = {}) => {
+    const response = await apiClient.get(`/api/analytics/recommendations/${userId}`, { params });
+    return response.data;
+  },
+
+  // Get analytics for a specific song
+  getSongAnalytics: async (songId, params = {}) => {
+    const response = await apiClient.get(`/api/analytics/songs/${songId}`, { params });
+    return response.data;
+  },
+
+  // Get platform-wide analytics (admin only)
+  getPlatformAnalytics: async (params = {}) => {
+    const response = await apiClient.get('/api/analytics/platform', { params });
+    return response.data;
+  },
+
+  // Get analytics dashboard data (admin only)
+  getAnalyticsDashboard: async (params = {}) => {
+    const response = await apiClient.get('/api/analytics/dashboard', { params });
     return response.data;
   },
 };
 
-// Exportar instancia por defecto
+// Exportar instancia por defecto (para uso directo)
 export default apiClient;

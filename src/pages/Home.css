@@ -157,7 +157,7 @@
 
 .song-card-image {
   width: 100%;
-  aspect-ratio: 1;
+  padding-bottom: 100%;
   background: linear-gradient(135deg, var(--apple-blue), #00d4ff);
   border-radius: 8px;
   display: flex;
@@ -363,7 +363,7 @@
 
 .discover-card-image {
   width: 100%;
-  aspect-ratio: 1;
+  padding-bottom: 100%;
   background: linear-gradient(135deg, var(--apple-blue), #00d4ff);
   display: flex;
   align-items: center;
