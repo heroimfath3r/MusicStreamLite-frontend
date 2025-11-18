@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSongStream } from '../hooks/useSongStream.js';
 import { usePlayer } from '../contexts/PlayerContext.jsx';
 import { motion } from 'framer-motion';
-import analyticsService from '../services/analyticsservice.js';
+import { analyticsAPI } from '../services/api.js'; // ✅ CORREGIDO
 import { usersAPI } from '../services/api.js';
 import { 
   FaPlay, 
@@ -44,7 +44,7 @@ const MusicPlayer = () => {
   const [loadingFavorite, setLoadingFavorite] = useState(false);
 
   const { url: streamUrl, loading: urlLoading, error: streamError } = useSongStream(currentSong?.song_id);
-  const playEventTrackedRef = useRef(false); // 📊 ANALYTICS
+  const playEventTrackedRef = useRef(false);
 
   // ============================================
   // CARGAR FAVORITOS AL MONTAR
@@ -103,14 +103,12 @@ const MusicPlayer = () => {
       setLoadingFavorite(true);
 
       if (isFavorite) {
-        // Remover de favoritos
         console.log('❤️ Removiendo de favoritos...');
         await usersAPI.removeFavorite(currentSong.song_id);
         setFavorites(prev => prev.filter(f => f.song_id !== currentSong.song_id && f.songId !== currentSong.song_id));
         setIsFavorite(false);
         console.log('✅ Eliminado de favoritos');
       } else {
-        // Agregar a favoritos
         console.log('❤️ Agregando a favoritos...');
         await usersAPI.addFavorite(currentSong.song_id);
         await loadFavorites();
@@ -119,7 +117,6 @@ const MusicPlayer = () => {
       }
     } catch (err) {
       console.error('❌ Error al toggle favorite:', err);
-      // Revertir estado si hay error
       setIsFavorite(!isFavorite);
     } finally {
       setLoadingFavorite(false);
@@ -340,28 +337,28 @@ const MusicPlayer = () => {
             playEventTrackedRef.current = true;
             
             const userId = (() => {
-  try {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      return user.user_id;
-    }
-  } catch (err) {
-    console.error('Error obteniendo userId:', err);
-  }
-  return 'anonymous';
-})();
+              try {
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                  const user = JSON.parse(userStr);
+                  return user.user_id;
+                }
+              } catch (err) {
+                console.error('Error obteniendo userId:', err);
+              }
+              return 'anonymous';
+            })();
             
             console.log('📊 [MusicPlayer] Registrando reproducción');
             console.log('  - userId:', userId);
             console.log('  - songId:', currentSong.song_id);
             console.log('  - duración:', Math.round(duration));
             
-            analyticsService.trackPlay(
-              userId,
-              currentSong.song_id,
-              Math.round(duration)
-            );
+            analyticsAPI.trackPlay({ // ✅ CORREGIDO
+              userId: userId,
+              songId: currentSong.song_id,
+              duration: Math.round(duration)
+            });
           }
         }}
         onPause={() => {
