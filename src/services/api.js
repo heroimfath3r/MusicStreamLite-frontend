@@ -2,311 +2,289 @@
 import axios from 'axios';
 
 // ============================================
-// 🔥 Configuración de URLs para CLOUD RUN
+// 🌐 Configuración de API Gateway en GCP
 // ============================================
-const API_URLS = {
-  user: process.env.REACT_APP_USER_API || 'https://user-service-586011919703.us-central1.run.app',
-  catalog: process.env.REACT_APP_CATALOG_API || 'https://catalog-service-586011919703.us-central1.run.app',
-  analytics: process.env.REACT_APP_ANALYTICS_API || 'https://analytics-service-586011919703.us-central1.run.app'
-};
+const API_GATEWAY_URL = process.env.REACT_APP_API_GATEWAY 
+  || 'https://musicstream-gateway-xxx.us-central1.run.app';
 
-console.log('🌐 APIs Configuradas:', API_URLS);
+console.log('🌐 API Gateway configurado:', API_GATEWAY_URL);
 
-// Crear instancia de axios para User Service
-const userAPI = axios.create({
-  baseURL: `${API_URLS.user}/api`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// ✅ FIXED: Crear instancia de axios para Catalog Service
-export const catalogAPI = axios.create({
-  baseURL: `${API_URLS.catalog}/api`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Crear instancia de axios para Analytics Service
-const analyticsAxios = axios.create({
-  baseURL: `${API_URLS.analytics}/api`,
+// Crear instancia única con API Gateway
+const apiClient = axios.create({
+  baseURL: `${API_GATEWAY_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 // ============================================
-// Interceptor para agregar token a TODAS las peticiones
+// Interceptor global para agregar token a TODAS las peticiones
 // ============================================
-[userAPI, catalogAPI, analyticsAxios].forEach(api => {
-  api.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error);
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-  );
-});
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 // ============================================
-// SONGS API (usa Catalog Service)
+// SONGS API (Catalog Service)
 // ============================================
 export const songsAPI = {
   getAll: async (params = {}) => {
-    const response = await catalogAPI.get('/songs', { params });
+    const response = await apiClient.get('/songs', { params });
     return response.data;
   },
 
   getById: async (id) => {
-    const response = await catalogAPI.get(`/songs/${id}`);
+    const response = await apiClient.get(`/songs/${id}`);
     return response.data;
   },
 
   search: async (query) => {
-    const response = await catalogAPI.get('/songs/search', { params: { q: query } });
+    const response = await apiClient.get('/songs/search', { params: { q: query } });
     return response.data;
   },
 
   create: async (songData) => {
-    const response = await catalogAPI.post('/songs', songData);
+    const response = await apiClient.post('/songs', songData);
     return response.data;
   },
 
   update: async (id, songData) => {
-    const response = await catalogAPI.put(`/songs/${id}`, songData);
+    const response = await apiClient.put(`/songs/${id}`, songData);
     return response.data;
   },
 
   delete: async (id) => {
-    const response = await catalogAPI.delete(`/songs/${id}`);
+    const response = await apiClient.delete(`/songs/${id}`);
     return response.data;
   },
 };
 
 // ============================================
-// ALBUMS API (usa Catalog Service)
+// ALBUMS API (Catalog Service)
 // ============================================
 export const albumsAPI = {
   getAll: async (params = {}) => {
-    const response = await catalogAPI.get('/albums', { params });
+    const response = await apiClient.get('/albums', { params });
     return response.data;
   },
 
   getById: async (id) => {
-    const response = await catalogAPI.get(`/albums/${id}`);
+    const response = await apiClient.get(`/albums/${id}`);
     return response.data;
   },
 
   getByArtist: async (artistId) => {
-    const response = await catalogAPI.get(`/albums/artist/${artistId}`);
+    const response = await apiClient.get(`/albums/artist/${artistId}`);
     return response.data;
   },
 
   create: async (albumData) => {
-    const response = await catalogAPI.post('/albums', albumData);
+    const response = await apiClient.post('/albums', albumData);
     return response.data;
   },
 
   update: async (id, albumData) => {
-    const response = await catalogAPI.put(`/albums/${id}`, albumData);
+    const response = await apiClient.put(`/albums/${id}`, albumData);
     return response.data;
   },
 
   delete: async (id) => {
-    const response = await catalogAPI.delete(`/albums/${id}`);
+    const response = await apiClient.delete(`/albums/${id}`);
     return response.data;
   },
 };
 
 // ============================================
-// ARTISTS API (usa Catalog Service)
+// ARTISTS API (Catalog Service)
 // ============================================
 export const artistsAPI = {
   getAll: async (params = {}) => {
-    const response = await catalogAPI.get('/artists', { params });
+    const response = await apiClient.get('/artists', { params });
     return response.data;
   },
 
   getById: async (id) => {
-    const response = await catalogAPI.get(`/artists/${id}`);
+    const response = await apiClient.get(`/artists/${id}`);
     return response.data;
   },
 
   create: async (artistData) => {
-    const response = await catalogAPI.post('/artists', artistData);
+    const response = await apiClient.post('/artists', artistData);
     return response.data;
   },
 
   update: async (id, artistData) => {
-    const response = await catalogAPI.put(`/artists/${id}`, artistData);
+    const response = await apiClient.put(`/artists/${id}`, artistData);
     return response.data;
   },
 
   delete: async (id) => {
-    const response = await catalogAPI.delete(`/artists/${id}`);
+    const response = await apiClient.delete(`/artists/${id}`);
     return response.data;
   },
 };
 
 // ============================================
-// USERS API (usa User Service)
+// USERS API (User Service)
 // ============================================
 export const usersAPI = {
   register: async (userData) => {
-    const response = await userAPI.post('/auth/register', userData);
+    const response = await apiClient.post('/auth/register', userData);
     return response.data;
   },
 
   login: async (credentials) => {
-    const response = await userAPI.post('/auth/login', credentials);
+    const response = await apiClient.post('/auth/login', credentials);
     return response.data;
   },
 
   getProfile: async () => {
-    const response = await userAPI.get('/users/profile');
+    const response = await apiClient.get('/users/profile');
     return response.data;
   },
 
   updateProfile: async (userData) => {
-    const response = await userAPI.put('/users/profile', userData);
+    const response = await apiClient.put('/users/profile', userData);
     return response.data;
   },
 
   addFavorite: async (songId) => {
-    const response = await userAPI.post('/favorites', { song_id: songId });
+    const response = await apiClient.post('/favorites', { song_id: songId });
     return response.data;
   },
 
   getFavorites: async () => {
-    const response = await userAPI.get('/favorites');
+    const response = await apiClient.get('/favorites');
     return response.data;
   },
 
   removeFavorite: async (songId) => {
-    const response = await userAPI.delete(`/favorites/${songId}`);
+    const response = await apiClient.delete(`/favorites/${songId}`);
     return response.data;
   },
 
   recordPlay: async (playData) => {
-    const response = await userAPI.post('/auth/play', playData);
+    const response = await apiClient.post('/auth/play', playData);
     return response.data;
   },
 
   getHistory: async (params = {}) => {
-    const response = await userAPI.get('/history', { params });
+    const response = await apiClient.get('/history', { params });
     return response.data;
   },
-  
-  // Cambiar contraseña: POST /users/change-password
+
   changePassword: async (currentPassword, newPassword) => {
     const payload = { currentPassword, newPassword };
-    const response = await userAPI.post('/users/change-password', payload);
+    const response = await apiClient.post('/users/change-password', payload);
     return response.data;
   },
 };
 
 // ============================================
-// PLAYLISTS API (usa User Service)
+// PLAYLISTS API (User Service)
 // ============================================
 export const playlistsAPI = {
   // Obtener todas las playlists del usuario
   getAll: async () => {
-    const response = await userAPI.get('/playlists');
+    const response = await apiClient.get('/playlists');
     return response.data;
   },
 
   // Crear nueva playlist
   create: async (playlistData) => {
-    const response = await userAPI.post('/playlists', playlistData);
+    const response = await apiClient.post('/playlists', playlistData);
     return response.data;
   },
 
   // Obtener canciones de una playlist
   getSongs: async (playlistId) => {
-    const response = await userAPI.get(`/playlists/${playlistId}/songs`);
+    const response = await apiClient.get(`/playlists/${playlistId}/songs`);
     return response.data;
   },
 
   // Agregar canción a playlist
-addSong: async (playlistId, songId) => {
-  if (playlistId === 'favorites') {
-    const response = await userAPI.post(`/favorites`, { song_id: songId });
+  addSong: async (playlistId, songId) => {
+    if (playlistId === 'favorites') {
+      const response = await apiClient.post(`/favorites`, { song_id: songId });
+      return response.data;
+    }
+    
+    const response = await apiClient.post(`/playlists/${playlistId}/songs`, { song_id: songId });
     return response.data;
-  }
-  
-  const response = await userAPI.post(`/playlists/${playlistId}/songs`, { song_id: songId });
-  return response.data;
-},
+  },
 
   // Remover canción de playlist
   removeSong: async (playlistId, songId) => {
-    const response = await userAPI.delete(`/playlists/${playlistId}/songs/${songId}`);
+    const response = await apiClient.delete(`/playlists/${playlistId}/songs/${songId}`);
     return response.data;
   },
 
   // Eliminar playlist
   delete: async (playlistId) => {
-    const response = await userAPI.delete(`/playlists/${playlistId}`);
+    const response = await apiClient.delete(`/playlists/${playlistId}`);
     return response.data;
   },
 
   // Actualizar playlist
   update: async (playlistId, playlistData) => {
-    const response = await userAPI.put(`/playlists/${playlistId}`, playlistData);
+    const response = await apiClient.put(`/playlists/${playlistId}`, playlistData);
     return response.data;
   },
 };
 
 // ============================================
-// SEARCH API (usa Catalog Service)
+// SEARCH API (Catalog Service)
 // ============================================
 export const searchAPI = {
   searchAll: async (query) => {
-    const response = await catalogAPI.get('/search', { params: { q: query } });
+    const response = await apiClient.get('/search', { params: { q: query } });
     return response.data;
   },
 
   searchSongs: async (query) => {
-    const response = await catalogAPI.get('/songs/search', { params: { q: query } });
+    const response = await apiClient.get('/songs/search', { params: { q: query } });
     return response.data;
   },
 
   searchArtists: async (query) => {
-    const response = await catalogAPI.get('/artists', { params: { q: query } });
+    const response = await apiClient.get('/artists', { params: { q: query } });
     return response.data;
   },
 
   searchAlbums: async (query) => {
-    const response = await catalogAPI.get('/albums', { params: { q: query } });
+    const response = await apiClient.get('/albums', { params: { q: query } });
     return response.data;
   },
 };
 
 // ============================================
-// ANALYTICS API (usa Analytics Service)
+// ANALYTICS API (Analytics Service)
 // ============================================
 export const analyticsAPI = {
   trackPlay: async (data) => {
-    const response = await analyticsAxios.post('/plays', data);
+    const response = await apiClient.post('/plays', data);
     return response.data;
   },
 
   getTrending: async () => {
-    const response = await analyticsAxios.get('/trending');
+    const response = await apiClient.get('/trending');
     return response.data;
   },
 
   getUserHistory: async (userId) => {
-    const response = await analyticsAxios.get(`/analytics/users/${userId}/history`);
+    const response = await apiClient.get(`/analytics/users/${userId}/history`);
     return response.data;
   },
 };
 
-// Exportar instancia por defecto (para uso directo)
-export default userAPI;
+// Exportar instancia por defecto
+export default apiClient;
