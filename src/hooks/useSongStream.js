@@ -1,8 +1,6 @@
 // frontend/src/hooks/useSongStream.js
-// ✅ Mejorado con logging robusto - REEMPLAZA EL ARCHIVO COMPLETO
-
 import { useState, useEffect, useRef } from 'react';
-import { catalogAPI } from '../services/api.js';
+import apiClient from '../services/api.js';
 
 export const useSongStream = (songId) => {
   const [url, setUrl] = useState(null);
@@ -25,11 +23,10 @@ export const useSongStream = (songId) => {
         setError(null);
 
         console.log('🎵 [useSongStream] Obteniendo URL para canción:', songId);
-        console.log('📍 [useSongStream] Endpoint: /stream/songs/' + songId + '/stream-url');
-        console.log('🌐 [useSongStream] Base URL:', catalogAPI.defaults.baseURL);
+        console.log('📍 [useSongStream] Endpoint: /api/stream/songs/' + songId + '/stream-url');
 
         // Hacer la petición
-        const response = await catalogAPI.get(`/stream/songs/${songId}/stream-url`);
+        const response = await apiClient.get(`/api/stream/songs/${songId}/stream-url`);
 
         console.log('📦 [useSongStream] Respuesta completa:', response);
         console.log('📦 [useSongStream] Response.data:', response.data);
@@ -62,7 +59,7 @@ export const useSongStream = (songId) => {
 
         // Programar renovación
         const timeUntilExpiration = expiresIn * 1000;
-        const renewTime = timeUntilExpiration - (60 * 60 * 1000); // 1 hora antes de expirar
+        const renewTime = timeUntilExpiration - (60 * 60 * 1000);
 
         console.log('🔄 [useSongStream] Renovación programada en:', Math.round(renewTime / 1000), 'segundos');
 
@@ -92,7 +89,6 @@ export const useSongStream = (songId) => {
 
     fetchStreamUrl();
 
-    // Cleanup
     return () => {
       if (renewTimeoutRef.current) {
         clearTimeout(renewTimeoutRef.current);

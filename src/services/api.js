@@ -25,6 +25,7 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    console.log('📤 Request:', config.method.toUpperCase(), config.url);
     return config;
   },
   (error) => {
@@ -188,7 +189,12 @@ export const usersAPI = {
   },
 
   getHistory: async (params = {}) => {
-    const response = await apiClient.get('/api/history', { params });
+    const response = await apiClient.get('/api/users/history', { params });
+    return response.data;
+  },
+
+  recordPlay: async (data) => {
+    const response = await apiClient.post('/api/plays', data);
     return response.data;
   },
 };
@@ -267,54 +273,36 @@ export const searchAPI = {
 // ANALYTICS API (Analytics Service)
 // ============================================
 export const analyticsAPI = {
-  // Track song play event
   trackPlay: async (data) => {
     const response = await apiClient.post('/api/plays', data);
     return response.data;
   },
 
-  // Get trending songs
   getTrending: async (params = {}) => {
     const response = await apiClient.get('/api/trending', { params });
     return response.data;
   },
 
-  // Get user listening history from analytics
   getUserHistory: async (userId, params = {}) => {
-    const response = await apiClient.get(`/api/analytics/users/${userId}/history`, { params });
+    const response = await apiClient.get(`/api/users/${userId}/history`, { params });
     return response.data;
   },
 
-  // Record engagement event (likes, skips, shares, etc)
   recordEngagement: async (data) => {
     const response = await apiClient.post('/api/engagement', data);
     return response.data;
   },
 
-  // Get personalized recommendations for user
   getRecommendations: async (userId, params = {}) => {
-    const response = await apiClient.get(`/api/analytics/recommendations/${userId}`, { params });
+    const response = await apiClient.get(`/api/recommendations/${userId}`, { params });
     return response.data;
   },
 
-  // Get analytics for a specific song
   getSongAnalytics: async (songId, params = {}) => {
-    const response = await apiClient.get(`/api/analytics/songs/${songId}`, { params });
-    return response.data;
-  },
-
-  // Get platform-wide analytics (admin only)
-  getPlatformAnalytics: async (params = {}) => {
-    const response = await apiClient.get('/api/analytics/platform', { params });
-    return response.data;
-  },
-
-  // Get analytics dashboard data (admin only)
-  getAnalyticsDashboard: async (params = {}) => {
-    const response = await apiClient.get('/api/analytics/dashboard', { params });
+    const response = await apiClient.get(`/api/songs/${songId}/analytics`, { params });
     return response.data;
   },
 };
 
-// Exportar instancia por defecto (para uso directo)
+// Exportar instancia por defecto
 export default apiClient;
