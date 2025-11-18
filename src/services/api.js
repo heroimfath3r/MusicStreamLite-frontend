@@ -5,7 +5,7 @@ import axios from 'axios';
 // 🌐 Configuración de API Gateway en GCP
 // ============================================
 const API_GATEWAY_URL = process.env.REACT_APP_API_GATEWAY 
-  || 'https://musicstream-gateway-xxx.us-central1.run.app';
+  || 'https://musicstream-gateway-7h7kd74n.uc.gateway.dev';
 
 console.log('🌐 API Gateway configurado:', API_GATEWAY_URL);
 
