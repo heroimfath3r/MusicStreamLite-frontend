@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaMusic,
   FaUser,
@@ -73,7 +73,7 @@ const Header = () => {
       animate="visible"
     >
       <div className="header-left">
-        {/* Logo - CORREGIDO */}
+        {/* Logo */}
         <motion.div 
           className="logo"
           whileHover={{ scale: 1.05 }}
@@ -136,50 +136,54 @@ const Header = () => {
             <FaUser size={16} />
           </motion.button>
 
-          {/* Dropdown menu */}
-          <motion.div
-            className="user-dropdown"
-            initial={{ opacity: 0, y: -10 }}
-            animate={isUserMenuOpen ? { opacity: 1, y: 0 } : { opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            pointerEvents={isUserMenuOpen ? 'auto' : 'none'}
-          >
-            <div className="dropdown-header">
-              <div className="user-info">
-                <div className="user-avatar-lg">
-                  <FaUser size={20} />
-                </div>
-                <div>
-                  <div className="user-name">
-                    {loading ? 'Cargando...' : (user?.name || 'Usuario')}
+          {/* ✅ CORREGIDO: Dropdown solo existe cuando está abierto */}
+          <AnimatePresence>
+            {isUserMenuOpen && (
+              <motion.div
+                className="user-dropdown"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="dropdown-header">
+                  <div className="user-info">
+                    <div className="user-avatar-lg">
+                      <FaUser size={20} />
+                    </div>
+                    <div>
+                      <div className="user-name">
+                        {loading ? 'Cargando...' : (user?.name || 'Usuario')}
+                      </div>
+                      <div className="user-email">
+                        {loading ? '' : (user?.email || '')}
+                      </div>
+                    </div>
                   </div>
-                  <div className="user-email">
-                    {loading ? '' : (user?.email || '')}
-                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="dropdown-divider"></div>
+                <div className="dropdown-divider"></div>
 
-            <div className="dropdown-menu">
-              <Link to="/profile" className="dropdown-item" onClick={closeUserMenu}>
-                <FaUser size={16} />
-                <span>Mi Perfil</span>
-              </Link>
-              <Link to="/settings" className="dropdown-item" onClick={closeUserMenu}>
-                <FaCog size={16} />
-                <span>Configuración</span>
-              </Link>
-            </div>
+                <div className="dropdown-menu">
+                  <Link to="/profile" className="dropdown-item" onClick={closeUserMenu}>
+                    <FaUser size={16} />
+                    <span>Mi Perfil</span>
+                  </Link>
+                  <Link to="/settings" className="dropdown-item" onClick={closeUserMenu}>
+                    <FaCog size={16} />
+                    <span>Configuración</span>
+                  </Link>
+                </div>
 
-            <div className="dropdown-divider"></div>
+                <div className="dropdown-divider"></div>
 
-            <button className="dropdown-logout" onClick={handleLogout}>
-              <FaSignOutAlt size={16} />
-              <span>Cerrar sesión</span>
-            </button>
-          </motion.div>
+                <button className="dropdown-logout" onClick={handleLogout}>
+                  <FaSignOutAlt size={16} />
+                  <span>Cerrar sesión</span>
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
     </motion.header>
