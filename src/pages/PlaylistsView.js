@@ -1,6 +1,4 @@
 // frontend/react-app/src/pages/PlaylistsView.js
-// ✅ CON DEBUGGING PARA ENCONTRAR PROBLEMA DE REDIRECCIÓN
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { FaPlus, FaTrash, FaMusic, FaEllipsisV } from 'react-icons/fa';
@@ -22,19 +20,6 @@ const PlaylistsView = () => {
   const [activeMenu, setActiveMenu] = useState(null);
 
   const navigate = useNavigate();
-
-  // ✅ DEBUG: Monitorear cambios en showCreateModal
-  useEffect(() => {
-    console.log('🔵 showCreateModal cambió a:', showCreateModal);
-  }, [showCreateModal]);
-
-  // ✅ DEBUG: Monitorear navegación
-  useEffect(() => {
-    console.log('🔵 PlaylistsView montado');
-    return () => {
-      console.log('🔵 PlaylistsView desmontado');
-    };
-  }, []);
 
   // ============================================================
   // EFFECT: CARGAR PLAYLISTS AL MONTAR
@@ -140,31 +125,8 @@ const PlaylistsView = () => {
   // NAVEGAR A DETALLE DE PLAYLIST
   // ============================================================
   const handleOpenPlaylist = useCallback((playlistId) => {
-    console.log('🔵 Navegando a playlist:', playlistId);
     navigate(`/playlists/${playlistId}`);
   }, [navigate]);
-
-  // ✅ NUEVO: Handler para abrir modal con debugging
-  const handleOpenModal = useCallback((e) => {
-    console.log('🔵 ======== CLICK EN NUEVA PLAYLIST ========');
-    console.log('🔵 Event:', e);
-    console.log('🔵 showCreateModal ANTES:', showCreateModal);
-    console.log('🔵 window.location.pathname:', window.location.pathname);
-    
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    setShowCreateModal(true);
-    console.log('🔵 setShowCreateModal(true) ejecutado');
-    
-    // Verificar después de un tick
-    setTimeout(() => {
-      console.log('🔵 showCreateModal DESPUÉS:', showCreateModal);
-      console.log('🔵 window.location.pathname DESPUÉS:', window.location.pathname);
-    }, 100);
-  }, [showCreateModal]);
 
   // ============================================================
   // RENDER: LOADING
@@ -211,19 +173,14 @@ const PlaylistsView = () => {
           Mis Playlists
         </motion.h1>
 
-        {/* ✅ BOTÓN CON DEBUGGING */}
-        <button
+        <motion.button
           className="create-playlist-btn"
-          onClick={handleOpenModal}
-          type="button"
-          style={{ 
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px'
-          }}
+          onClick={() => setShowCreateModal(true)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          <FaPlus /> Nueva Playlist (DEBUG)
-        </button>
+          <FaPlus /> Nueva Playlist
+        </motion.button>
       </div>
 
       {/* GRID DE PLAYLISTS */}
@@ -238,9 +195,8 @@ const PlaylistsView = () => {
             <FaMusic size={48} />
             <p>No tienes playlists aún</p>
             <button 
-              onClick={handleOpenModal}
+              onClick={() => setShowCreateModal(true)}
               className="create-first-btn"
-              type="button"
             >
               Crear tu primera playlist
             </button>
@@ -330,42 +286,19 @@ const PlaylistsView = () => {
         )}
       </motion.div>
 
-      {/* ✅ DEBUG: Mostrar estado del modal */}
-      <div style={{
-        position: 'fixed',
-        top: '10px',
-        right: '10px',
-        background: 'rgba(0,0,0,0.8)',
-        color: 'lime',
-        padding: '10px',
-        borderRadius: '8px',
-        zIndex: 9999,
-        fontSize: '12px'
-      }}>
-        <div>showCreateModal: {String(showCreateModal)}</div>
-        <div>pathname: {window.location.pathname}</div>
-      </div>
-
       {/* MODAL: CREAR PLAYLIST */}
       {showCreateModal && (
         <motion.div
           className="modal-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          onClick={() => {
-            console.log('🔵 Click en overlay, cerrando modal');
-            setShowCreateModal(false);
-          }}
-          style={{ zIndex: 10000 }}
+          onClick={() => setShowCreateModal(false)}
         >
           <motion.div
             className="modal-content"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            onClick={(e) => {
-              console.log('🔵 Click en modal content, previniendo propagación');
-              e.stopPropagation();
-            }}
+            onClick={(e) => e.stopPropagation()}
           >
             <h2>Crear nueva playlist</h2>
 

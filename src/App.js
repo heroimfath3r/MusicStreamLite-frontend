@@ -1,9 +1,9 @@
 // src/App.js
-// ✅ CORREGIDO: Todas las rutas incluidas y protegidas correctamente
+// ✅ CORREGIDO: Sin motion.main que bloquea clicks
 
 import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { PlayerProvider } from './contexts/PlayerContext.jsx';
 
 
@@ -37,21 +37,6 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import './App.css';
 
 // ============================================
-// 🎬 ANIMACIONES DE PÁGINA
-// ============================================
-const pageVariants = {
-  initial: { opacity: 0, y: 20 },
-  in: { opacity: 1, y: 0 },
-  out: { opacity: 0, y: -20 },
-};
-
-const pageTransition = {
-  type: 'tween',
-  ease: 'anticipate',
-  duration: 0.5,
-};
-
-// ============================================
 // 🛣️ ANIMATED ROUTES COMPONENT
 // ============================================
 function AnimatedRoutes() {
@@ -59,15 +44,8 @@ function AnimatedRoutes() {
 
   return (
     <AnimatePresence mode="wait">
-      <motion.main
-        className="main-content"
-        variants={pageVariants}
-        initial="initial"
-        animate="in"
-        exit="out"
-        transition={pageTransition}
-        key={location.pathname}
-      >
+      {/* ✅ QUITADO motion.main - Estaba bloqueando clicks */}
+      <main className="main-content">
         <Suspense fallback={<LoadingFallback />}>
           <Routes location={location} key={location.pathname}>
             {/* ============================================
@@ -132,7 +110,7 @@ function AnimatedRoutes() {
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </Suspense>
-      </motion.main>
+      </main>
     </AnimatePresence>
   );
 }
