@@ -1,6 +1,6 @@
 // frontend/src/hooks/useSongStream.js
 import { useState, useEffect, useRef } from 'react';
-import apiClient from '../services/api.js';
+import  { streamAPI } from '../services/api.js';
 
 export const useSongStream = (songId) => {
   const [url, setUrl] = useState(null);
@@ -26,7 +26,7 @@ export const useSongStream = (songId) => {
         console.log('📍 [useSongStream] Endpoint: /api/stream/songs/' + songId + '/stream-url');
 
         // Hacer la petición
-        const response = await apiClient.get(`/api/stream/songs/${songId}/stream-url`);
+        const response = await streamAPI.get(`/api/stream/songs/${songId}/stream-url`);
 
         console.log('📦 [useSongStream] Respuesta completa:', response);
         console.log('📦 [useSongStream] Response.data:', response.data);

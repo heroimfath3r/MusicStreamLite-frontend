@@ -20,7 +20,7 @@ const userAPI = axios.create({
   },
 });
 
-// ✅ FIXED: Crear instancia de axios para Catalog Service
+// Crear instancia de axios para Catalog Service
 export const catalogAPI = axios.create({
   baseURL: `${API_URLS.catalog}/api`,
   headers: {
@@ -46,6 +46,7 @@ const analyticsAxios = axios.create({
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+      console.log('📤 Request:', config.method.toUpperCase(), config.url);
       return config;
     },
     (error) => {
@@ -203,7 +204,6 @@ export const usersAPI = {
     return response.data;
   },
   
-  // Cambiar contraseña: POST /users/change-password
   changePassword: async (currentPassword, newPassword) => {
     const payload = { currentPassword, newPassword };
     const response = await userAPI.post('/users/change-password', payload);
@@ -215,48 +215,41 @@ export const usersAPI = {
 // PLAYLISTS API (usa User Service)
 // ============================================
 export const playlistsAPI = {
-  // Obtener todas las playlists del usuario
   getAll: async () => {
     const response = await userAPI.get('/playlists');
     return response.data;
   },
 
-  // Crear nueva playlist
   create: async (playlistData) => {
     const response = await userAPI.post('/playlists', playlistData);
     return response.data;
   },
 
-  // Obtener canciones de una playlist
   getSongs: async (playlistId) => {
     const response = await userAPI.get(`/playlists/${playlistId}/songs`);
     return response.data;
   },
 
-  // Agregar canción a playlist
-addSong: async (playlistId, songId) => {
-  if (playlistId === 'favorites') {
-    const response = await userAPI.post(`/favorites`, { song_id: songId });
+  addSong: async (playlistId, songId) => {
+    if (playlistId === 'favorites') {
+      const response = await userAPI.post(`/favorites`, { song_id: songId });
+      return response.data;
+    }
+    
+    const response = await userAPI.post(`/playlists/${playlistId}/songs`, { song_id: songId });
     return response.data;
-  }
-  
-  const response = await userAPI.post(`/playlists/${playlistId}/songs`, { song_id: songId });
-  return response.data;
-},
+  },
 
-  // Remover canción de playlist
   removeSong: async (playlistId, songId) => {
     const response = await userAPI.delete(`/playlists/${playlistId}/songs/${songId}`);
     return response.data;
   },
 
-  // Eliminar playlist
   delete: async (playlistId) => {
     const response = await userAPI.delete(`/playlists/${playlistId}`);
     return response.data;
   },
 
-  // Actualizar playlist
   update: async (playlistId, playlistData) => {
     const response = await userAPI.put(`/playlists/${playlistId}`, playlistData);
     return response.data;
@@ -302,8 +295,19 @@ export const analyticsAPI = {
     return response.data;
   },
 
+  // ✅ CORREGIDO: Ruta correcta
   getUserHistory: async (userId) => {
-    const response = await analyticsAxios.get(`/analytics/users/${userId}/history`);
+    const response = await analyticsAxios.get(`/users/${userId}/history`);
+    return response.data;
+  },
+};
+
+// ============================================
+// ✅ STREAM API (usa Catalog Service, NO stream-service)
+// ============================================
+export const streamAPI = {
+  getStreamUrl: async (songId) => {
+    const response = await catalogAPI.get(`/stream/songs/${songId}/stream-url`);
     return response.data;
   },
 };
