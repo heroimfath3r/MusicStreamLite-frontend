@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { songsAPI, analyticsAPI } from '../services/api.js';
-import { FaPlay, FaMusic, FaClock, FaFire, FaStar } from 'react-icons/fa';
+import { FaPlay, FaClock, FaFire, FaStar } from 'react-icons/fa';
 import './Home.css';
 
 const Home = () => {
