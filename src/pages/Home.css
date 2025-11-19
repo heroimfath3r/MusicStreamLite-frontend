@@ -157,19 +157,19 @@
 
 .song-card-image {
   width: 100%;
-  padding-bottom: 100%;
+  padding-bottom: 100%; /* ✅ Mantiene aspecto 1:1 */
   background: linear-gradient(135deg, var(--apple-blue), #00d4ff);
   border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   margin-bottom: 12px;
   position: relative;
   overflow: hidden;
 }
 
-/* ✅ IMÁGENES CON OBJECT-FIT */
+/* ✅ IMÁGENES CON OBJECT-FIT - POSICIÓN ABSOLUTA PARA LLENAR CONTENEDOR */
 .card-image {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -183,6 +183,8 @@
 
 .play-overlay {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.4);
@@ -363,17 +365,17 @@
 
 .discover-card-image {
   width: 100%;
-  padding-bottom: 100%;
+  padding-bottom: 100%; /* ✅ Mantiene aspecto 1:1 */
   background: linear-gradient(135deg, var(--apple-blue), #00d4ff);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
   overflow: hidden;
 }
 
-/* ✅ IMÁGENES CON OBJECT-FIT EN DISCOVER */
+/* ✅ IMÁGENES CON OBJECT-FIT EN DISCOVER - POSICIÓN ABSOLUTA */
 .discover-card-image-img {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -387,6 +389,8 @@
 
 .discover-play-overlay {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.4);
