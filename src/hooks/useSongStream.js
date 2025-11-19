@@ -1,6 +1,6 @@
 // frontend/src/hooks/useSongStream.js
 import { useState, useEffect, useRef } from 'react';
-import  { streamAPI } from '../services/api.js';
+import { streamAPI } from '../services/api.js';
 
 export const useSongStream = (songId) => {
   const [url, setUrl] = useState(null);
@@ -23,18 +23,18 @@ export const useSongStream = (songId) => {
         setError(null);
 
         console.log('🎵 [useSongStream] Obteniendo URL para canción:', songId);
-        console.log('📍 [useSongStream] Endpoint: /api/stream/songs/' + songId + '/stream-url');
+        console.log('📍 [useSongStream] Llamando a streamAPI.getStreamUrl()');
 
-        // Hacer la petición
-        const response = await streamAPI.get(`/api/stream/songs/${songId}/stream-url`);
+        // ✅ CORRECCIÓN: Usar el método getStreamUrl del objeto streamAPI
+        const response = await streamAPI.getStreamUrl(songId);
 
         console.log('📦 [useSongStream] Respuesta completa:', response);
-        console.log('📦 [useSongStream] Response.data:', response.data);
 
-        const { url: newUrl, expiresIn, success, error: apiError } = response.data;
+        // ✅ CORRECCIÓN: response ya es la data, no response.data
+        const { url: newUrl, expiresIn, success, error: apiError } = response;
 
         if (!success) {
-          console.error('❌ [useSongStream] API retornó success:false', response.data);
+          console.error('❌ [useSongStream] API retornó success:false', response);
           setError(apiError || 'Error desconocido del servidor');
           setUrl(null);
           setLoading(false);
