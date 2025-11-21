@@ -158,7 +158,6 @@ export const artistsAPI = {
   },
 };
 
-// wei
 // ============================================
 // USERS API (usa User Service)
 // ============================================
@@ -182,7 +181,7 @@ export const usersAPI = {
     const response = await userAPI.put('/users/profile', userData);
     return response.data;
   },
-
+// keilo
   addFavorite: async (songId) => {
     const response = await userAPI.post('/favorites', { song_id: songId });
     return response.data;
