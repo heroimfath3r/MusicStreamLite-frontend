@@ -21,6 +21,7 @@ const userAPI = axios.create({
 });
 
 
+
 // Crear instancia de axios para Catalog Service
 export const catalogAPI = axios.create({
   baseURL: `${API_URLS.catalog}/api`,
@@ -36,6 +37,7 @@ const analyticsAxios = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
 
 // ============================================
 // Interceptor para agregar token a TODAS las peticiones
@@ -156,6 +158,7 @@ export const artistsAPI = {
   },
 };
 
+// wei
 // ============================================
 // USERS API (usa User Service)
 // ============================================
