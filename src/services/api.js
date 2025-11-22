@@ -306,7 +306,7 @@ export const analyticsAPI = {
 };
 
 // ============================================
-// ✅ STREAM API (usa Catalog Service, NO stream-service)
+// ✅ STREAM API (usa Catalog Service)
 // ============================================
 export const streamAPI = {
   getStreamUrl: async (songId) => {
