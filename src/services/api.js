@@ -1,3 +1,5 @@
+//api.js front - gcloud funcional 
+
 // src/services/api.js
 import axios from 'axios';
 
@@ -5,9 +7,9 @@ import axios from 'axios';
 // 🔥 Configuración de URLs para CLOUD RUN
 // ============================================
 const API_URLS = {
-  user: process.env.REACT_APP_USER_API || 'https://user-service-586011919703.us-central1.run.app',
-  catalog: process.env.REACT_APP_CATALOG_API || 'https://catalog-service-586011919703.us-central1.run.app',
-  analytics: process.env.REACT_APP_ANALYTICS_API || 'https://analytics-service-586011919703.us-central1.run.app'
+  user: process.env.REACT_APP_USER_API || 'https://localhost:3002',
+  catalog: process.env.REACT_APP_CATALOG_API || 'https://localhost:3001',
+  analytics: process.env.REACT_APP_ANALYTICS_API || 'https://localhost:3003',
 };
 
 console.log('🌐 APIs Configuradas:', API_URLS);
